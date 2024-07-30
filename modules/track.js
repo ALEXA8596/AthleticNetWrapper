@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-getYear = (year) => {
+const getYear = (year) => {
     if (!year) {
         // get year
         let date = new Date();
@@ -82,27 +82,30 @@ const track = {
                 return undefined;
             }
         },
-        /**
-         * 
-         * @param {String} teamId 
-         * @param {String} sport xc or tf
-         * @param {String} year 
-         * @returns 
-         */
-        Team: async function (teamId, year) {
-            if (!year) {
-                // get year
-                let date = new Date();
-                year = date.getFullYear();
-            }
-            const response = await fetch(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=tf&year=${year}`, {
-                "headers": {
-                },
-                "body": null,
-                "method": "GET"
-            }).then(res => res.json());
-            return response;
-        },
+
+        // Idk where I got this from, this isn't called anywhere on the website
+
+        // /**
+        //  * 
+        //  * @param {String} teamId 
+        //  * @param {String} sport xc or tf
+        //  * @param {String} year 
+        //  * @returns 
+        //  */
+        // Team: async function (teamId, year) {
+        //     if (!year) {
+        //         // get year
+        //         let date = new Date();
+        //         year = date.getFullYear();
+        //     }
+        //     const response = await fetch(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=tf&year=${year}`, {
+        //         "headers": {
+        //         },
+        //         "body": null,
+        //         "method": "GET"
+        //     }).then(res => res.json());
+        //     return response;
+        // },
         GetTeamEventRecords: async function (teamId, year) {
             if (!year) year = getYear(year);
             const response = await fetch(`https://www.athletic.net/api/v1/TeamHome/GetTeamEventRecords?teamId=${teamId}&seasonId=${year}`, {
