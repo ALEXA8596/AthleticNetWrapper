@@ -83,32 +83,20 @@ const track = {
             }
         },
 
-        // Idk where I got this from, this isn't called anywhere on the website
-
-        // /**
-        //  * 
-        //  * @param {String} teamId 
-        //  * @param {String} sport xc or tf
-        //  * @param {String} year 
-        //  * @returns 
-        //  */
-        // Team: async function (teamId, year) {
-        //     if (!year) {
-        //         // get year
-        //         let date = new Date();
-        //         year = date.getFullYear();
-        //     }
-        //     const response = await fetch(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=tf&year=${year}`, {
-        //         "headers": {
-        //         },
-        //         "body": null,
-        //         "method": "GET"
-        //     }).then(res => res.json());
-        //     return response;
-        // },
-        GetTeamEventRecords: async function (teamId, year) {
-            if (!year) year = getYear(year);
-            const response = await fetch(`https://www.athletic.net/api/v1/TeamHome/GetTeamEventRecords?teamId=${teamId}&seasonId=${year}`, {
+        /**
+         * 
+         * @param {String} teamId 
+         * @param {String} sport xc or tf
+         * @param {String} year 
+         * @returns 
+         */
+        Team: async function (teamId, year) {
+            if (!year) {
+                // get year
+                let date = new Date();
+                year = date.getFullYear();
+            }
+            const response = await fetch(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=tf&year=${year}`, {
                 "headers": {
                 },
                 "body": null,
@@ -116,6 +104,70 @@ const track = {
             }).then(res => res.json());
             return response;
         },
+        GetTeamEventRecords: this.GetTeamEventRecords,
+        records: {
+            /**
+             * @name GetTeamEventRecords
+             * @description Gets the team event records for a specific year
+             * @param {String} teamId 
+             * @param {String} year 
+             * @returns {Object}
+             */
+            GetTeamEventRecords: async function (teamId, year) {
+                if (!year) year = getYear(year);
+                const response = await fetch(`https://www.athletic.net/api/v1/TeamHome/GetTeamEventRecords?teamId=${teamId}&seasonId=${year}`, {
+                    "headers": {
+                    },
+                    "body": null,
+                    "method": "GET"
+                }).then(res => res.json());
+                return response;
+            },
+            /**
+             * @name Seasons_TeamReports
+             * @description Gets the valid seasons for team reports
+             * @param {String} teamId 
+             * @returns {Object}
+             */
+            Seasons_TeamReports: async function (teamId) {
+                const response = await fetch(`https://www.athletic.net/api/v1/Public/Seasons_TeamReports?team=${teamId}&sport=tfo`, {
+                    "headers": {
+                        "accept": "application/json, text/plain, */*",
+                    },
+                    "body": null,
+                    "method": "GET"
+                }).then(res => res.json());
+                return response;
+            },
+            /**
+             * @name GetTeamRecords
+             * @description Gets the team / school records
+             * @param {String} teamId 
+             * @param {String} gender 
+             * @param {String} eventShort 
+             * @param {Boolean} indoor 
+             * @param {Object} qParams 
+             * @returns 
+             */
+            GetTeamRecords: async function (teamId, gender = "m", eventShort = "", indoor = false, qParams = {}) {
+                if(!teamId) return undefined;
+                const response = await fetch("https://www.athletic.net/api/v1/tfRankings/GetRankings", {
+                    "headers": {
+                        "accept": "application/json, text/plain, */*",
+                    },
+                    "body": { 
+                        "reportType": "teamRecords", 
+                        "teamId": teamId, 
+                        "indoor": false, 
+                        "eventShort": eventShort, 
+                        "gender": gender, 
+                        "qParams": qParams
+                    },
+                    "method": "POST"
+                }).then(res => res.json());
+                return response;
+            },
+        }
     },
     athlete: {
         /**

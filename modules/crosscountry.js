@@ -12,28 +12,34 @@ const getYear = (year) => {
 
 const crosscountry = {
     team: {
-        // Idk where I got this from, this isn't called anywhere on the website
-
-        // /**
-        //  * 
-        //  * @param {*} teamId 
-        //  * @param {*} year 
-        //  * @returns 
-        //  */
-        // Team: async function (teamId, year) {
-        //     if (!year) {
-        //         // get year
-        //         let date = new Date();
-        //         year = date.getFullYear();
-        //     }
-        //     const response = await fetch(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=xc&year=${year}`, {
-        //         "headers": {
-        //         },
-        //         "body": null,
-        //         "method": "GET"
-        //     }).then(res => res.json());
-        //     return response;
-        // },
+        /**
+         * @name GetTeam
+         * @description Gets basic team information
+         * @param {String} teamId 
+         * @param {String} year 
+         * @returns {Object}
+         */
+        Team: async function (teamId, year) {
+            if (!year) {
+                // get year
+                let date = new Date();
+                year = date.getFullYear();
+            }
+            const response = await fetch(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=xc&year=${year}`, {
+                "headers": {
+                },
+                "body": null,
+                "method": "GET"
+            }).then(res => res.json());
+            return response;
+        },
+        /**
+         * @name GetTeamCore
+         * @description Gets basic team information + JWToken
+         * @param {String} teamId The team ID
+         * @param {String} year 
+         * @returns {Object}
+         */
         GetTeamCore: async function (teamId, year = null) {
             if(!teamId) return undefined;
             year = getYear(year);
@@ -47,6 +53,13 @@ const crosscountry = {
                 return undefined;
             }
         },
+        /**
+         * @name GetCalendar
+         * @description Gets the team (meet) calendar
+         * @param {String} teamId 
+         * @param {String} year 
+         * @returns {Object}
+         */
         GetCalendar: async function (teamId, year = null) {
             if(!teamId) return undefined;
             year = getYear(year);
@@ -65,6 +78,13 @@ const crosscountry = {
                 return undefined;
             }
         },
+        /**
+         * @name GetAthletes
+         * @description Gets the team athletes
+         * @param {String} teamId 
+         * @param {String} year 
+         * @returns {Object}
+         */
         GetAthletes: async function (teamId, year = null) {
             if(!teamId) return undefined;
             year = getYear(year);
@@ -83,7 +103,7 @@ const crosscountry = {
             }
         },
         records: {
-
+            
         }
     },
     athlete: {
