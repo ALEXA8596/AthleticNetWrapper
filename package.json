@@ -1,14 +1,25 @@
 {
   "name": "athleticnetwrapper",
   "version": "1.0.0",
-  "description": "",
+  "description": "An Unofficial Wrapper for the Athletic.net API",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ALEXA8596/AthleticNetWrapper.git"
+  },
+  "keywords": [
+    "running",
+    "track",
+    "track and field",
+    "running",
+    "athletic.net",
+    "cross country"
+  ],
+  "author": "ALEXA8596",
   "license": "ISC",
   "dependencies": {
     "jsdom": "^24.1.1",

@@ -103,7 +103,175 @@ const crosscountry = {
             }
         },
         records: {
-            
+            seasonBests: async function (teamId, year = "") {
+                const response = await fetch(`https://www.athletic.net/CrossCountry/seasonbest?SchoolID=${teamId}&S=${year}`, {
+                    "headers": {
+                    },
+                    "body": null,
+                    "method": "GET"
+                }).then(res => res.text());
+                var dom = new JSDOM(response);
+                var window = dom.window;
+                var document = window.document;
+
+                const data = {};
+
+                const divs = document.getElementsByClassName("distance");
+                for (let i = 0; i < divs.length; i++) {
+                    const element = divs[i];
+                    const distanceLabel = element.getElementsByTagName("h3")[0];
+                    distanceLabel.getElementsByTagName("span")[0].remove();
+                    const distance = distanceLabel.textContent;
+
+                    const maleTable = element.getElementsByClassName("M")[0].getElementsByTagName("table")[0];
+                    const femaleTable = element.getElementsByClassName("F")[0].getElementsByTagName("table")[0];
+
+                    // get maleTable rows
+                    if (maleTable) {
+                        const maleTableRows = maleTable.getElementsByTagName("tr");
+                        if (maleTableRows.length > 0) {
+                            const maleRecords = [];
+                            for (let i = 0; i < maleTableRows.length; i++) {
+                                const row = maleTableRows[i];
+                                [...row.getElementsByTagName("span")].forEach((element) => element.remove());
+                                [...row.getElementsByTagName("small")].forEach((element) => element.remove());
+                                const cells = row.getElementsByTagName("td");
+                                const record = {
+                                    place: cells[0].textContent,
+                                    grade: cells[1].textContent,
+                                    name: cells[2].textContent,
+                                    time: cells[3].textContent,
+                                    date: cells[4].textContent,
+                                    meet: cells[5].textContent,
+                                    athleteUrl: cells[2].getElementsByTagName("a")[0].href,
+                                    resultUrl: cells[3].getElementsByTagName("a")[0].href,
+                                    meetUrl: cells[5].getElementsByTagName("a")[0].href,
+                                };
+                                maleRecords.push(record);
+                            };
+                            if (!data[distance]) {
+                                data[distance] = {};
+                            }
+                            data[distance]["boys"] = maleRecords;
+                        }
+                    };
+                    if (femaleTable) {
+                        const femaleTableRows = femaleTable.getElementsByTagName("tr");
+                        if (femaleTableRows.length > 0) {
+                            const femaleRecords = [];
+
+                            for (let i = 0; i < femaleTableRows.length; i++) {
+                                const row = femaleTableRows[i];
+                                [...row.getElementsByTagName("span")].forEach((element) => element.remove());
+                                [...row.getElementsByTagName("small")].forEach((element) => element.remove());
+                                const cells = row.getElementsByTagName("td");
+                                const record = {
+                                    place: cells[0].textContent,
+                                    grade: cells[1].textContent,
+                                    name: cells[2].textContent,
+                                    time: cells[3].textContent,
+                                    date: cells[4].textContent,
+                                    meet: cells[5].textContent,
+                                    athleteUrl: cells[2].getElementsByTagName("a")[0].href,
+                                    resultUrl: cells[3].getElementsByTagName("a")[0].href,
+                                    meetUrl: cells[5].getElementsByTagName("a")[0].href,
+                                };
+                                femaleRecords.push(record);
+                            };
+                            if (!data[distance]) {
+                                data[distance] = {};
+                            }
+                            data[distance]["girls"] = femaleRecords;
+                        }
+                    }
+
+
+                }
+
+                return data;
+            },
+            TeamRecords: async function (teamId) {
+                const response = await fetch(`https://www.athletic.net/CrossCountry/TeamRecords.aspx?SchoolID=${teamId}`, {
+                    "headers": {
+                        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                    },
+                }).then(res => res.text());
+                var dom = new JSDOM(response);
+                var window = dom.window;
+                var document = window.document;
+
+                const data = {};
+
+                const divs = document.getElementsByClassName("distance");
+                for (let i = 0; i < divs.length; i++) {
+                    const element = divs[i];
+                    const distanceLabel = element.getElementsByTagName("h3")[0];
+                    distanceLabel.getElementsByTagName("span")[0].remove();
+                    const distance = distanceLabel.textContent;
+
+                    const maleTable = element.getElementsByClassName("M")[0].getElementsByTagName("table")[0];
+                    const femaleTable = element.getElementsByClassName("F")[0].getElementsByTagName("table")[0];
+
+                    // get maleTable rows
+                    if (maleTable) {
+                        const maleTableRows = maleTable.getElementsByTagName("tr");
+                        if (maleTableRows.length > 0) {
+                            const maleRecords = [];
+                            for (let i = 0; i < maleTableRows.length; i++) {
+                                const row = maleTableRows[i];
+                                [...row.getElementsByTagName("span")].forEach((element) => element.remove());
+                                [...row.getElementsByTagName("small")].forEach((element) => element.remove());
+                                const cells = row.getElementsByTagName("td");
+                                const record = {
+                                    place: cells[0].textContent,
+                                    grade: cells[1].textContent,
+                                    name: cells[2].textContent,
+                                    time: cells[3].textContent,
+                                    meet: cells[4].textContent,
+                                    athleteUrl: cells[2].getElementsByTagName("a")[0].href,
+                                    resultUrl: cells[3].getElementsByTagName("a")[0].href,
+                                };
+                                maleRecords.push(record);
+                            };
+                            if (!data[distance]) {
+                                data[distance] = {};
+                            }
+                            data[distance]["boys"] = maleRecords;
+                        }
+                    };
+                    if (femaleTable) {
+                        const femaleTableRows = femaleTable.getElementsByTagName("tr");
+                        if (femaleTableRows.length > 0) {
+                            const femaleRecords = [];
+
+                            for (let i = 0; i < femaleTableRows.length; i++) {
+                                const row = femaleTableRows[i];
+                                [...row.getElementsByTagName("span")].forEach((element) => element.remove());
+                                [...row.getElementsByTagName("small")].forEach((element) => element.remove());
+                                const cells = row.getElementsByTagName("td");
+                                const record = {
+                                    place: cells[0].textContent,
+                                    grade: cells[1].textContent,
+                                    name: cells[2].textContent,
+                                    time: cells[3].textContent,
+                                    date: cells[4].textContent,
+                                    athleteUrl: cells[2].getElementsByTagName("a")[0].href,
+                                    resultUrl: cells[3].getElementsByTagName("a")[0].href,
+                                };
+                                femaleRecords.push(record);
+                            };
+                            if (!data[distance]) {
+                                data[distance] = {};
+                            }
+                            data[distance]["girls"] = femaleRecords;
+                        }
+                    }
+
+
+                }
+
+                return data;
+            }
         }
     },
     athlete: {
