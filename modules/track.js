@@ -104,7 +104,9 @@ const track = {
             }).then(res => res.json());
             return response;
         },
-        GetTeamEventRecords: this.GetTeamEventRecords,
+        GetTeamEventRecords: async function (teamId, year) {
+            return await this.records.GetTeamEventRecords(teamId, year);
+        },
         records: {
             /**
              * @name GetTeamEventRecords
