@@ -12,6 +12,13 @@ const getYear = (year) => {
 
 const track = {
     team: {
+        /**
+         * @name GetAthletes
+         * @description Gets the team athletes
+         * @param {String} teamId 
+         * @param {String} year 
+         * @returns {Object}
+         */
         GetAthletes: async function (teamId, sport = undefined, year = undefined) {
             if (!teamId) {
                 return console.error("No teamId provided");
@@ -31,6 +38,13 @@ const track = {
                 console.log(e);
             }
         },
+        /**
+         * @function GetTeamCore
+         * @description Gets basic team information + JWToken
+         * @param {String} teamId The team ID
+         * @param {String} year 
+         * @returns {Object}
+         */
         GetTeamCore: async function (teamId, sport, year) {
             if (!sport) {
                 // get month
@@ -61,6 +75,14 @@ const track = {
                 return undefined;
             }
         },
+        /**
+         * @function GetCalendar
+         * @description Gets the meets and the calendar for a team
+         * @param {String} teamId 
+         * @param {String} sport 
+         * @param {String} year 
+         * @returns {Object}
+         */
         GetCalendar: async function (teamId, sport, year) {
             if (!year) {
                 // get year
@@ -84,11 +106,11 @@ const track = {
         },
 
         /**
-         * 
+         * @name GetTeam
+         * @description Gets basic team information
          * @param {String} teamId 
-         * @param {String} sport xc or tf
          * @param {String} year 
-         * @returns 
+         * @returns {Object}
          */
         Team: async function (teamId, year) {
             if (!year) {
@@ -184,7 +206,43 @@ const track = {
         }
     },
     meet: {
+        /**
+         * @function
+         * @description Get basic meet information
+         * @param {String} meetId 
+         * @returns {String}
+         */
+        GetMeetData: async function (meetId) {
+            if (!meetId) return undefined;
+            const response = await fetch(`https://www.athletic.net/api/v1/Meet/GetMeetData?meetId=${meetId}&sport=tf`, {
+                "headers": {
+                    "accept": "application/json, text/plain, */*",
+                },
+                "body": null,
+                "method": "GET"
+            }).then(res => res.json());
+            return response;
+        },
+        /**
+         * @function
+         * @description Get all the results from a meet
+         * @param {String} meetId 
+         * @returns {Object}
+         */
+        GetAllResultsData: async function (meetId) {
+            const jwtMeet = await this.GetMeetData(meetId).then(res => res.jwtMeet);
 
+            const response = fetch("https://www.athletic.net/api/v1/Meet/GetAllResultsData?rawResults=false&showTips=false", {
+                "headers": {
+                    "accept": "application/json, text/plain, */*",
+                    "anettokens": await jwtMeet,
+                },
+                "body": null,
+                "method": "GET"
+            });
+
+            return response;
+        }
     }
 };
 
