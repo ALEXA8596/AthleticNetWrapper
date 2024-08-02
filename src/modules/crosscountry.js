@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-
+import { DOMParser } from '@xmldom/xmldom';
 /**
  * @function getYear
  * @param {String} year 
@@ -115,9 +115,7 @@ const crosscountry = {
                     "body": null,
                     "method": "GET"
                 }).then(res => res.text());
-                var dom = new JSDOM(response);
-                var window = dom.window;
-                var document = window.document;
+                var document = new DOMParser().parseFromString(response, 'text/html');
 
                 const data = {};
 
@@ -201,10 +199,8 @@ const crosscountry = {
                         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                     },
                 }).then(res => res.text());
-                var dom = new JSDOM(response);
-                var window = dom.window;
-                var document = window.document;
-
+                var document = new DOMParser().parseFromString(response, 'text/html');
+                
                 const data = {};
 
                 const divs = document.getElementsByClassName("distance");

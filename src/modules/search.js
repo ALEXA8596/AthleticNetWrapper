@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { JSDOM } from "jsdom";
+import { DOMParser } from '@xmldom/xmldom';
 
 const search = {
     AutoComplete: async function (query) {
@@ -41,9 +41,7 @@ const search = {
             }),
             "method": "POST"
         }).then(async res => await res.json());
-        var dom = new JSDOM("<table>" + response.d.results + "</table>");
-        var window = dom.window;
-        var document = window.document;
+        var document = new DOMParser().parseFromString("<table>" + response.d.results + "</table>", 'text/html');
 
         [...document.getElementsByTagName('i')].forEach((element) => element.remove());
         [...document.getElementsByTagName('i')].forEach((element) => element.remove());
