@@ -1,5 +1,7 @@
 import fetch from "node-fetch";
-import { DOMParser } from '@xmldom/xmldom';
+import { DOMParser as NodeDOMParser } from 'xmldom';
+
+const DOMParser = (typeof window !== 'undefined' && window.DOMParser) ? window.DOMParser : NodeDOMParser;
 
 const search = {
     AutoComplete: async function (query) {

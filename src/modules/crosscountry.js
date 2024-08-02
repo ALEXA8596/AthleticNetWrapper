@@ -1,5 +1,8 @@
 import fetch from 'node-fetch';
-import { DOMParser } from '@xmldom/xmldom';
+import { DOMParser as NodeDOMParser } from 'xmldom';
+
+const DOMParser = (typeof window !== 'undefined' && window.DOMParser) ? window.DOMParser : NodeDOMParser;
+
 /**
  * @function getYear
  * @param {String} year 
@@ -200,7 +203,7 @@ const crosscountry = {
                     },
                 }).then(res => res.text());
                 var document = new DOMParser().parseFromString(response, 'text/html');
-                
+
                 const data = {};
 
                 const divs = document.getElementsByClassName("distance");
