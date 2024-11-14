@@ -3,3 +3,5 @@ import crosscountry from './modules/crosscountry.js';
 import search from './modules/search.js';
 
 export { track, crosscountry, search };
+
+export default { track, crosscountry, search };

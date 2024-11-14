@@ -1,11 +1,13 @@
 {
-  "name": "athleticnetwrapper",
+  "name": "athletichelper",
   "version": "1.0.0",
   "description": "An Unofficial Wrapper for the Athletic.net API",
   "main": "dist/index.js",
+  "browser": "",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src -d dist"
   },
   "repository": {
     "type": "git",
@@ -23,6 +25,7 @@
   "license": "ISC",
   "dependencies": {
     "@xmldom/xmldom": "^0.8.10",
+    "jsdom": "^24.1.1",
     "node-fetch": "^2.7.0"
   },
   "devDependencies": {

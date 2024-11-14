@@ -1,7 +1,22 @@
 import fetch from 'node-fetch';
-import { DOMParser as NodeDOMParser } from 'xmldom';
 
-const DOMParser = (typeof window !== 'undefined' && window.DOMParser) ? window.DOMParser : NodeDOMParser;
+let JSDOM;
+
+const getDocument = (typeof window !== 'undefined' && window.DOMParser) ? function (text) {
+    // browser
+    return new DOMParser().parseFromString(text, 'text/html');
+} : async function (text) {
+    // Node.js environment
+    if (!JSDOM) {
+        /**
+         * @type {import('jsdom')}
+         */
+        const jsdomModule = await import('jsdom');
+        JSDOM = jsdomModule.JSDOM;
+    }
+    const dom = new JSDOM(text);
+    return dom.window.document;
+};
 
 /**
  * @function getYear
@@ -118,7 +133,7 @@ const crosscountry = {
                     "body": null,
                     "method": "GET"
                 }).then(res => res.text());
-                var document = new DOMParser().parseFromString(response, 'text/html');
+                var document = await getDocument(response);
 
                 const data = {};
 
@@ -126,8 +141,7 @@ const crosscountry = {
                 for (let i = 0; i < divs.length; i++) {
                     const element = divs[i];
                     const distanceLabel = element.getElementsByTagName("h3")[0];
-                    distanceLabel.getElementsByTagName("span")[0].remove();
-                    const distance = distanceLabel.textContent;
+                    if (distanceLabel.getElementsByTagName("span").length > 0) distanceLabel.getElementsByTagName("span")[0].remove(); const distance = distanceLabel.textContent;
 
                     const maleTable = element.getElementsByClassName("M")[0].getElementsByTagName("table")[0];
                     const femaleTable = element.getElementsByClassName("F")[0].getElementsByTagName("table")[0];
@@ -202,7 +216,7 @@ const crosscountry = {
                         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                     },
                 }).then(res => res.text());
-                var document = new DOMParser().parseFromString(response, 'text/html');
+                var document = await getDocument(response);
 
                 const data = {};
 
@@ -310,18 +324,6 @@ const crosscountry = {
             const response = fetch(`https://www.athletic.net/api/v1/General/GetRankings?athleteId=${athleteId}&sport=xc&seasonId=${seasonId}&truncate=false`, {
                 "headers": {
                     "accept": "application/json, text/plain, */*",
-                    "accept-language": "en-US,en;q=0.9",
-                    "anet-appinfo": "web:web:0:420",
-                    "pageguid": "9e3374ce-5968-4535-b1bf-235e2b469181",
-                    "priority": "u=1, i",
-                    "sec-ch-ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Google Chrome\";v=\"126\"",
-                    "sec-ch-ua-mobile": "?0",
-                    "sec-ch-ua-platform": "\"Windows\"",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin",
-                    "cookie": "__stripe_mid=5aae35e4-5c1c-46e1-9172-3077bf13ce7d60cd9b; _au_1d=AU1D-0100-001710387210-H8U3O4ST-GXBB; __stripe_sid=1fc0fe12-78fd-4614-8d8e-3312cd209a9e7c7e20; ANETSettings=Team=1934&Sport=XC&guid=18eb6e92-45b1-400d-bdde-83c3655dd92d&User=1989871",
-                    "Referer": "https://www.athletic.net/athlete/26122795/cross-country/all",
                     "Referrer-Policy": "strict-origin-when-cross-origin"
                 },
                 "body": null,
@@ -341,7 +343,7 @@ const crosscountry = {
         GetMeetData: async function (meetId) {
             const response = await fetch(`https://www.athletic.net/api/v1/Meet/GetMeetData?meetId=${meetId}&sport=xc`, {
                 "headers": {
-                    "accept": "application/json, text/plain, */*",
+                    "accept": "application/json, */*",
                 },
                 "body": null,
                 "method": "GET"
@@ -359,15 +361,15 @@ const crosscountry = {
             if (!meetId) return undefined;
             // maybe add a delay to prevent rate limiting
 
-            const meetData = await this.GetMeetData(meetId);
+            const meetData = await crosscountry.meet.GetMeetData(meetId);
 
             const data = {};
 
             const races = meetData.xcDivisions;
 
             await Promise.all(
-                races.map(race => {
-                    const response = this.GetResultsData2(meetId, race.IDMeetDiv);
+                races.map(async race => {
+                    const response = await crosscountry.meet.GetResultsData2(meetId, race.IDMeetDiv);
                     data[race.IDMeetDiv] = response;
                 }));
 
@@ -385,13 +387,14 @@ const crosscountry = {
             const response = await fetch("https://www.athletic.net/api/v1/Meet/GetResultsData2", {
                 "headers": {
                     "accept": "application/json, text/plain, */*",
-                    "anettokens": await this.GetMeetData(meetId).then(res => res.jwtMeet),
+                    "anettokens": await crosscountry.meet.GetMeetData(meetId).then(res => res.jwtMeet),
+                    "Content-Type": "application/json" // Add this line to set the content type to JSON
                 },
-                "body": {
+                "body": JSON.stringify({ // Stringify the request body
                     "divId": raceId
-                },
+                }),
                 "method": "POST"
-            });
+            }).then(res => res.json());
             return response;
         },
         /**
@@ -414,14 +417,58 @@ const crosscountry = {
             const response = await fetch("https://www.athletic.net/api/v1/Meet/GetXCMoreData", {
                 "headers": {
                     "accept": "application/json, text/plain, */*",
-                    "anettokens": await this.GetMeetData(meetId).then(res => res.jwtMeet),
+                    "anettokens": await crosscountry.meet.GetMeetData(meetId).then(res => res.jwtMeet),
                 },
                 "body": null,
                 "method": "GET"
             }).then(res => res.json());
             return response;
         },
+    },
+    GetUncategorizedTeams: async function() {
+        const response = await fetch("https://www.athletic.net/api/v1/DivisionHome/GetUncategorizedTeams?sport=xc&divisionId=73596", {
+            "headers": {
+              "accept": "application/json, text/plain, */*",
+              "accept-language": "en-US,en;q=0.9",
+            },
+            "body": null,
+            "method": "GET"
+          });
+        if(response.ok) {
+            return response.json();
+        }
+        throw new Error("Request failed");
+    },
+
+    GetTree: async function () {
+        const response = await fetch("https://www.athletic.net/api/v1/DivisionHome/GetTree?sport=xc&divisionId=73596&depth=1&includeTeams=false", {
+            "headers": {
+              "accept": "application/json, text/plain, */*",
+              "accept-language": "en-US,en;q=0.9",
+            },
+            "body": null,
+            "method": "GET"
+          });
+        if(response.ok) {
+            return response.json();
+        }
+        throw new Error("Request failed");
+    },
+    GetDivisions: async function () {
+
+        const response = await fetch("https://www.athletic.net/api/v1/DivisionHome/GetDivisions?sport=xc&L0=&L1=&L2=&L3=&L4=&L5=&year=0&divId=73596", {
+            "headers": {
+              "accept": "application/json, text/plain, */*",
+            },
+            "body": null,
+            "method": "GET"
+          });
+        if(response.ok) {
+            return response.json();
+        }
+        throw new Error("Request failed");
     }
+
 }
 
 export default crosscountry;
