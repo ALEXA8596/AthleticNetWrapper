@@ -48,7 +48,7 @@ const crosscountry = {
                 let date = new Date();
                 year = date.getFullYear();
             }
-            const response = await fetch(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=xc&year=${year}`, {
+            const response = await fetch(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=xc&season=${year}`, {
                 "headers": {
                 },
                 "body": null,

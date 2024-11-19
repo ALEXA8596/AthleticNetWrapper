@@ -1,4 +1,4 @@
-**Github Copilot was used to automate repetitive tasks**
+
 
 # UnOfficial Athletic.Net API Wrapper for NodeJS
 
@@ -27,3 +27,4 @@ I'm currently a high schooler participating in Cross Country and Track and Field
 
 ## API Documentation
 
+**Copilot was used in making this project**
