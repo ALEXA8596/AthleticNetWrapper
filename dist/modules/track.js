@@ -121,7 +121,7 @@ const track = {
         let date = new Date();
         year = date.getFullYear();
       }
-      const response = await (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=tf&year=${year}`, {
+      const response = await (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=tf&season=${year}`, {
         "headers": {},
         "body": null,
         "method": "GET"
@@ -201,7 +201,7 @@ const track = {
      * @param {String} sport xc or tf
      * @param {*} level 0 = all, 2 = middle school, 4 = high school
      */
-    getAthleteBioData: async function (athleteId, sport, level = 0) {
+    GetAthleteBioData: async function (athleteId, sport, level = 0) {
       const response = await (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/AthleteBio/GetAthleteBioData?athleteId=${athleteId}&sport=${sport}&level=${level}`).then(res => res.json());
       return response;
     }

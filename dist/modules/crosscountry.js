@@ -54,7 +54,7 @@ const crosscountry = {
         let date = new Date();
         year = date.getFullYear();
       }
-      const response = await (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=xc&year=${year}`, {
+      const response = await (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=xc&season=${year}`, {
         "headers": {},
         "body": null,
         "method": "GET"
@@ -413,6 +413,47 @@ const crosscountry = {
       }).then(res => res.json());
       return response;
     }
+  },
+  GetUncategorizedTeams: async function () {
+    const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/DivisionHome/GetUncategorizedTeams?sport=xc&divisionId=73596", {
+      "headers": {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9"
+      },
+      "body": null,
+      "method": "GET"
+    });
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error("Request failed");
+  },
+  GetTree: async function () {
+    const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/DivisionHome/GetTree?sport=xc&divisionId=73596&depth=1&includeTeams=false", {
+      "headers": {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9"
+      },
+      "body": null,
+      "method": "GET"
+    });
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error("Request failed");
+  },
+  GetDivisions: async function () {
+    const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/DivisionHome/GetDivisions?sport=xc&L0=&L1=&L2=&L3=&L4=&L5=&year=0&divId=73596", {
+      "headers": {
+        "accept": "application/json, text/plain, */*"
+      },
+      "body": null,
+      "method": "GET"
+    });
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error("Request failed");
   }
 };
 var _default = exports.default = crosscountry;
