@@ -12,11 +12,7 @@ let JSDOM;
 const getDocument = function (text) {
   // browser
   return new DOMParser().parseFromString(text, 'text/html');
-}
-
-function removeTrailingWhitespace(string) {
-  return string.replace(/\s+$/, '');
-}
+};
 
 const search = {
   AutoComplete: async function (query) {

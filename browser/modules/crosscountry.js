@@ -14,6 +14,7 @@ const getDocument = function (text) {
   return new DOMParser().parseFromString(text, 'text/html');
 }
 
+
 /**
  * @function getYear
  * @param {String} year 

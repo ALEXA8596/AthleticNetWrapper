@@ -276,7 +276,7 @@ const track = {
      */
     GetAllResultsData: async function (meetId) {
       const jwtMeet = await this.GetMeetData(meetId).then(res => res.jwtMeet);
-      const response = (0, _nodeFetch.default)("https://www.athletic.net/api/v1/Meet/GetAllResultsData?rawResults=false&showTips=false", {
+      const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/Meet/GetAllResultsData?rawResults=false&showTips=false", {
         "headers": {
           "accept": "application/json, text/plain, */*",
           "anettokens": await jwtMeet
@@ -285,6 +285,45 @@ const track = {
         "method": "GET"
       }).then(res => res.json());
       return response;
+    },
+    GetTeams: async function (meetId) {
+      // fetch("https://www.athletic.net/api/v1/Meet/GetTeams", {
+      //     "headers": {
+      //       "accept": "application/json, text/plain, */*",
+      //       "accept-language": "en-US,en;q=0.9",
+      //       "anet-appinfo": "web:web:0:480",
+      //       "anettokens": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZWV0SWQiOjU3NDIyNywic3BvcnQiOjIsIm5iZiI6MTczOTg1Njg0MywiZXhwIjoxNzQwMDI5NzAzLCJpYXQiOjE3Mzk4NTY5MDMsImlzcyI6ImF0aGxldGljLm5ldCIsImF1ZCI6Imp3dE1lZXQifQ.0SCFeuxTInLDMODi947uPruepv_yYXhKdmO8F3Ra-No",
+      //       "pageguid": "b57f31f4-622b-438a-9833-64c1689e5ed5",
+      //       "priority": "u=1, i",
+      //       "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"133\", \"Chromium\";v=\"133\"",
+      //       "sec-ch-ua-mobile": "?0",
+      //       "sec-ch-ua-platform": "\"Windows\"",
+      //       "sec-fetch-dest": "empty",
+      //       "sec-fetch-mode": "cors",
+      //       "sec-fetch-site": "same-origin"
+      //     },
+      //     "referrer": "https://www.athletic.net/TrackAndField/meet/574227/teams",
+      //     "referrerPolicy": "strict-origin-when-cross-origin",
+      //     "body": null,
+      //     "method": "GET",
+      //     "mode": "cors",
+      //     "credentials": "include"
+      //   });
+      if (!meetId) return undefined;
+      const meetCore = await this.GetMeetData(meetId);
+      // console.log("jwt", meetCore);
+      try {
+        return (0, _nodeFetch.default)("https://www.athletic.net/api/v1/Meet/GetTeams", {
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "anettokens": await meetCore.jwtMeet
+          },
+          "body": null,
+          "method": "GET"
+        }).then(res => res.json());
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
 };
