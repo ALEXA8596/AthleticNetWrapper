@@ -221,7 +221,7 @@ const track = {
                 if (!teamId) {
                     return console.error("No teamId provided");
                 }
-                const teamCore = await this.GetTeamCore(teamId);
+                const teamCore = await track.team.GetTeamCore(teamId, "tfo", seasonId);
                 // console.log("jwt", teamCore);
                 try {
                     return fetch(`https://www.athletic.net/api/v1/TeamHome/GetTeamAthleteRecords?teamId=${teamId}&seasonId=${seasonId}`, {

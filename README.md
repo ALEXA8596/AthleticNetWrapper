@@ -27,4 +27,9 @@ I'm currently a high schooler participating in Cross Country and Track and Field
 
 ## API Documentation
 
+## Updating the package
+```bash
+npm publish
+ ```
+
 **Copilot was used in making this project**
