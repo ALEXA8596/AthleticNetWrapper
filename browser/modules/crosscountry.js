@@ -12,7 +12,7 @@ let JSDOM;
 const getDocument = function (text) {
   // browser
   return new DOMParser().parseFromString(text, 'text/html');
-};
+}
 
 /**
  * @function getYear
@@ -43,7 +43,7 @@ const crosscountry = {
         let date = new Date();
         year = date.getFullYear();
       }
-      const response = await (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=xc&year=${year}`, {
+      const response = await (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/TeamNav/Team?team=${teamId}&sport=xc&season=${year}`, {
         "headers": {},
         "body": null,
         "method": "GET"
@@ -308,6 +308,7 @@ const crosscountry = {
       const response = (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/General/GetRankings?athleteId=${athleteId}&sport=xc&seasonId=${seasonId}&truncate=false`, {
         "headers": {
           "accept": "application/json, text/plain, */*",
+          "Referrer-Policy": "strict-origin-when-cross-origin"
         },
         "body": null,
         "method": "GET"
@@ -346,67 +347,43 @@ const crosscountry = {
       const data = {};
       const races = meetData.xcDivisions;
       await Promise.all(races.map(async race => {
-        const response = await crosscountry.meet.GetResultsData2(meetId, race.IDMeetDiv);
+        const response = await crosscountry.meet.GetResultsData(meetId, race.IDMeetDiv);
         data[race.IDMeetDiv] = response;
       }));
       return data;
     },
     /**
-     * @function GetResultsData2
+     * @function GetResultsData
      * @description Gets the results of a Cross Country race
+     * @description This api changes frequently. Changing the succeeding # to a different number may work
      * @param {String} meetId 
      * @param {String} raceId 
      * @returns {Object}
      */
-    GetResultsData2: async function (meetId, raceId) {
+    GetResultsData: async function (meetId, raceId) {
       if (!meetId || !raceId) return undefined;
-      const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/Meet/GetResultsData2", {
+      const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/Meet/GetResultsData3", {
         "headers": {
           "accept": "application/json, text/plain, */*",
           "anettokens": await crosscountry.meet.GetMeetData(meetId).then(res => res.jwtMeet),
-          "Content-Type": "application/json" // Add this line to set the content type to JSON
+          "Content-Type": "application/json"
         },
         "body": JSON.stringify({
-          // Stringify the request body
           "divId": raceId
         }),
         "method": "POST"
       }).then(res => res.json());
       return response;
-      (0, _nodeFetch.default)("https://www.athletic.net/api/v1/Meet/GetResultsData2", {
-        "headers": {
-          "accept": "application/json, text/plain, */*",
-          "accept-language": "en-US,en;q=0.9",
-          "anet-appinfo": "web:web:0:420",
-          "anettokens": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZWV0SWQiOjI0MDcwMCwic3BvcnQiOjMsIm5iZiI6MTcyNzI4NDc1MiwiZXhwIjoxNzI3NDU3NjEyLCJpYXQiOjE3MjcyODQ4MTIsImlzcyI6ImF0aGxldGljLm5ldCIsImF1ZCI6Imp3dE1lZXQifQ.-O3Q0741mvx_kbhyDA0Md3JOkgzN7qXNxztfFBOhC0Y",
-          "cache-control": "no-cache",
-          "content-type": "application/json",
-          "pageguid": "208f19f3-0e57-4bdb-a3bc-36f992e03b51",
-          "pragma": "no-cache",
-          "priority": "u=1, i",
-          "sec-ch-ua": "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\", \"Google Chrome\";v=\"128\"",
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": "\"Windows\"",
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-origin",
-          "cookie": "__stripe_mid=50d13f18-bbdc-4fef-9b38-f7052ba24ac49cb26a; _ga_6Y9DWPZKS5=GS1.1.1711483086.2.0.1711483094.0.0.0; _ga_SCYPYYPQNR=GS1.1.1711483087.2.1.1711483095.0.0.0; FCNEC=%5B%5B%22AKsRol8L7H-mg_JcCoPibl6o2EAWwlpACPe6NELTw2y_GHANMpD9NJuiOKM0RprXJhJJxlEgmeRafZn7JCj9jDco1Y9nW5vWpyx_rgCJkPJHcG_sQpcFbBSCucD0l7CHEbKkdmjzkwHO-Yy-wk9dB6DH23N4lQ9pOg%3D%3D%22%5D%5D; CSUser=username=1989871&emailAddress=alexjunyoung@gmail.com&CommonName=Alex Kim&EnableDisplayName=true; __qca=P0-513864225-1723573462352; _gid=GA1.2.297662432.1727205388; .AspNet.ApplicationCookie=rhOlACF15HJEKdWcLV3ejkKVC8fm9jgOK2bfpVHawAuR8n55STS4ym3L9PbSFiME_0kGNt_M6xq3rItNljQVkNH2aJSO4p1Npf6wnNry1RZ3gZEQ1vAF5e5vSIMoUW1iF-yn0HtA4vAnO71FGkYN-PYPxCP3SJl8lhHkOT48QfaLl3qSv0RAxmZPhQ-ubGG4MBGm4seVG2Huzr2gFaEla0tCwiAKbS9gqMRT7F2U4kHOtMhwhHJE4fGVv3ojnNHAKriHoMUv6R1aZpASivn8A5OgEXi-7UY8lU76P0WMB7sO11t_rvFVzDGSfco6PXqIacmSWhUXYBX6ivt_NClkVm6hhL-tgd8O9f70VCUVfsDfpNWJkkuCHYVqTdvcZtRbu4OO5AgTiNa-0tydt5jm21JD2EABuEi4cOj2U0bsFakpzimrLwc2Q7Z1cEkk59odxzy1PYty9FfhaozEwP6uEMwaEWLuFbjD7yv4kVtMvU8; __stripe_sid=b0023045-1022-4e6e-812d-b7817b15247d749058; ANETSettings=guid=926a52c2-e74c-47da-8155-055784fee3cb&Sport=XC&Team=1077&User=1989871; cto_bundle=pDdVGF9IMUFUN0xDVkRRd293alM1RThlVmpLS2hFaVhmanBlU2h2Z3g5UHV3VG5qNHBBaVNaVndBQ1QzZWoxNWxxRzNiQmI5VW5vQWs3TnVQSFVmQ1BPbjRyJTJCVnpOcFpXZ0lwUGc1djBmTUJIeVExN1czZkF3aHNScTJhbkVscjZZTEZPU3NGWHlEeGZsRDJoU3c3MGNsVSUyQjFrYzdnU00xaURybDd6VGZVa0VmcHkzT2k0UXE2ZUdiJTJGanolMkJ1YVNlRUolMkZKSnZoNFBMMVJiVWI3d1FjTGROekZFZyUzRCUzRA; _gat_gtag_UA_297644_1=1; _ga=GA1.1.1453029558.1709071516; _ga_CV6QCFM8SJ=GS1.1.1727284535.79.1.1727284812.0.0.0",
-          "Referer": "https://www.athletic.net/CrossCountry/meet/240700/results/961374",
-          "Referrer-Policy": "strict-origin-when-cross-origin"
-        },
-        "body": "{\"divId\":961374}",
-        "method": "POST"
-      });
     },
     /**
      * @function GetIndividualRaceResults
-     * @description A shortcut for GetResultsData2
+     * @description A shortcut for GetResultsData
      * @param {String} meetId 
      * @param {String} raceId 
      * @returns {Object}
      */
     GetIndividualRaceResults: async (meetId, raceId) => {
-      return await (void 0).crossCountry.meet.GetResultsData2(meetId, raceId);
+      return await crosscountry.meet.GetResultsData(meetId, raceId);
     },
     /**
      * @function GetXCMoreData
@@ -425,6 +402,47 @@ const crosscountry = {
       }).then(res => res.json());
       return response;
     }
+  },
+  GetUncategorizedTeams: async function () {
+    const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/DivisionHome/GetUncategorizedTeams?sport=xc&divisionId=73596", {
+      "headers": {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9"
+      },
+      "body": null,
+      "method": "GET"
+    });
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error("Request failed");
+  },
+  GetTree: async function () {
+    const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/DivisionHome/GetTree?sport=xc&divisionId=73596&depth=1&includeTeams=false", {
+      "headers": {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9"
+      },
+      "body": null,
+      "method": "GET"
+    });
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error("Request failed");
+  },
+  GetDivisions: async function () {
+    const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/DivisionHome/GetDivisions?sport=xc&L0=&L1=&L2=&L3=&L4=&L5=&year=0&divId=73596", {
+      "headers": {
+        "accept": "application/json, text/plain, */*"
+      },
+      "body": null,
+      "method": "GET"
+    });
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error("Request failed");
   }
 };
 var _default = exports.default = crosscountry;

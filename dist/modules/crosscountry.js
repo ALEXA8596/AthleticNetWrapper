@@ -358,28 +358,28 @@ const crosscountry = {
       const data = {};
       const races = meetData.xcDivisions;
       await Promise.all(races.map(async race => {
-        const response = await crosscountry.meet.GetResultsData2(meetId, race.IDMeetDiv);
+        const response = await crosscountry.meet.GetResultsData(meetId, race.IDMeetDiv);
         data[race.IDMeetDiv] = response;
       }));
       return data;
     },
     /**
-     * @function GetResultsData2
+     * @function GetResultsData
      * @description Gets the results of a Cross Country race
+     * @description This api changes frequently. Changing the succeeding # to a different number may work
      * @param {String} meetId 
      * @param {String} raceId 
      * @returns {Object}
      */
-    GetResultsData2: async function (meetId, raceId) {
+    GetResultsData: async function (meetId, raceId) {
       if (!meetId || !raceId) return undefined;
-      const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/Meet/GetResultsData2", {
+      const response = await (0, _nodeFetch.default)("https://www.athletic.net/api/v1/Meet/GetResultsData3", {
         "headers": {
           "accept": "application/json, text/plain, */*",
           "anettokens": await crosscountry.meet.GetMeetData(meetId).then(res => res.jwtMeet),
-          "Content-Type": "application/json" // Add this line to set the content type to JSON
+          "Content-Type": "application/json"
         },
         "body": JSON.stringify({
-          // Stringify the request body
           "divId": raceId
         }),
         "method": "POST"
@@ -388,13 +388,13 @@ const crosscountry = {
     },
     /**
      * @function GetIndividualRaceResults
-     * @description A shortcut for GetResultsData2
+     * @description A shortcut for GetResultsData
      * @param {String} meetId 
      * @param {String} raceId 
      * @returns {Object}
      */
     GetIndividualRaceResults: async (meetId, raceId) => {
-      return await (void 0).crossCountry.meet.GetResultsData2(meetId, raceId);
+      return await crosscountry.meet.GetResultsData(meetId, raceId);
     },
     /**
      * @function GetXCMoreData
