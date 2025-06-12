@@ -4,6 +4,7 @@
   "description": "An Unofficial Wrapper for the Athletic.net API",
   "main": "dist/index.js",
   "browser": "browser/index.js",
+  "types": "src/types.d.ts",
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
