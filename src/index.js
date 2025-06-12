@@ -1,7 +1,13 @@
-import track from './modules/track.js';
-import crosscountry from './modules/crosscountry.js';
-import search from './modules/search.js';
+import track from './athletic/track.js';
+import crosscountry from './athletic/crosscountry.js';
+import search from './athletic/search.js';
 
-export { track, crosscountry, search };
+const athletic = {
+    track,
+    crosscountry,
+    search
+};
 
-export default { track, crosscountry, search };
+export { athletic };
+
+export default { athletic };
