@@ -1,6 +1,6 @@
 {
   "name": "athletichelper",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "An Unofficial Wrapper for the Athletic.net and Milesplit API",
   "main": "dist/index.js",
   "browser": "browser/index.js",
