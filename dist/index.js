@@ -3,31 +3,36 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "crosscountry", {
-  enumerable: true,
-  get: function () {
-    return _crosscountry.default;
-  }
-});
-exports.default = void 0;
-Object.defineProperty(exports, "search", {
-  enumerable: true,
-  get: function () {
-    return _search.default;
-  }
-});
-Object.defineProperty(exports, "track", {
-  enumerable: true,
-  get: function () {
-    return _track.default;
-  }
-});
-var _track = _interopRequireDefault(require("./modules/track.js"));
-var _crosscountry = _interopRequireDefault(require("./modules/crosscountry.js"));
-var _search = _interopRequireDefault(require("./modules/search.js"));
+exports.milesplit = exports.default = exports.athletic = void 0;
+var _track = _interopRequireDefault(require("./athletic/track.js"));
+var _crosscountry = _interopRequireDefault(require("./athletic/crosscountry.js"));
+var _search = _interopRequireDefault(require("./athletic/search.js"));
+var _home = require("./home.js");
+var _search2 = require("./search.js");
+var _rankings = _interopRequireDefault(require("./rankings.js"));
+var _meet = require("./meet.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var _default = exports.default = {
+const athletic = exports.athletic = {
   track: _track.default,
   crosscountry: _crosscountry.default,
   search: _search.default
+};
+const milesplit = exports.milesplit = {
+  meets: {
+    getMeets: _meet.getMeets,
+    getPerformances: _meet.getPerformances
+  },
+  rankings: _rankings.default,
+  search: {
+    getSearchToken: _search2.getSearchToken,
+    fetchTeams: _search2.fetchTeams,
+    fetchAthletes: _search2.fetchAthletes
+  },
+  home: {
+    getLiveEvents: _home.getLiveEvents
+  }
+};
+var _default = exports.default = {
+  athletic,
+  milesplit
 };

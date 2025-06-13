@@ -12,7 +12,7 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 const getDocument = function (text) {
   // browser
   return new DOMParser().parseFromString(text, 'text/html');
-};
+}
 
 /**
  * @function getYear

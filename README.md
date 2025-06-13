@@ -28,7 +28,10 @@ I'm currently a high schooler participating in Cross Country and Track and Field
 ## API Documentation
 
 ## Updating the package
+
+###### remember to switch type from commonjs to module
 ```bash
+npm version patch / minor / major
 npm publish
  ```
 
