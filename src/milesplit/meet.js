@@ -1,6 +1,6 @@
 import getDocument from "../helpers/getDocument";
 
-import fetch from "node-fetch";
+// import fetch from "node-fetch";
 
 import * as cookie from "cookie";
 
@@ -72,25 +72,6 @@ async function getMeets(season, level, state, month, year) {
   return await response.text();
 }
 
-// https://ca.milesplit.com/meets/665700-arcadia-invitational-2025/coverage
-// https://ca.milesplit.com/api/v1/meets/665700/performances?isMeetPro=0&resultsId=1144979&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET
-
-// fetch(
-//   "https://ca.milesplit.com/api/v1/meets/665700/performances?isMeetPro=1&resultsId=1144979&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET",
-//   {
-//     headers: {
-//       accept: "*/*",
-//       "accept-language": "en-US,en;q=0.9",
-//       appname: "MileSplit",
-//       apptoken: "f8a6f964ea4fb2e2758ad564ccbf22f5",
-//       priority: "u=1, i",
-//       cookie: "unique_id=764dfaf07333088a50776646417cb4eb; ",
-//     },
-//     body: null,
-//     method: "GET",
-//   }
-// );
-
 let uniqueId;
 let appHash;
 
@@ -119,61 +100,21 @@ async function getRawPerformances(meetId, resultsId) {
     };
   }
 
-  const fields = [
-    "id",
-    "meetId",
-    "meetName",
-    "teamId",
-    "videoId",
-    "teamName",
-    "athleteId",
-    "firstName",
-    "lastName",
-    "gender",
-    "genderName",
-    "divisionId",
-    "divisionName",
-    "meetResultsDivisionId",
-    "resultsDivisionId",
-    "ageGroupName",
-    "gradYear",
-    "eventName",
-    "eventCode",
-    "eventDistance",
-    "eventGenreOrder",
-    "round",
-    "roundName",
-    "heat",
-    "units",
-    "mark",
-    "place",
-    "windReading",
-    "profileUrl",
-    "teamProfileUrl",
-    "performanceVideoId",
-    "teamLogo",
-    "statusCode",
-  ];
-
-  const url = `https://milesplit.com/api/v1/meets/${meetId}/performances?isMeetPro=0&resultsId=${resultsId}&fields=${encodeURI(
-    fields.join(",")
-  )}&m=GET`;
-  // console.log("Fetching performances from URL:", url);
+  const url = "https://milesplit.com/api/v1/meets/" + meetId + "/performances?isMeetPro=0&resultsId=" + resultsId + "&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET"
+  
 
   const AppHashAndUniqueId = await getAppHashAndUniqueId();
 
-  console.log(AppHashAndUniqueId)
 
   const response = await fetch(url, {
     headers: {
       "Accept": "*/*",
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
       cookie: `unique_id=${AppHashAndUniqueId.uniqueId};`,
-      Appname: "Milesplit",
-      Apptoken: AppHashAndUniqueId.appHash,
     },
+    method: "GET",
+    body: null
   });
+
   if (!response.ok) {
     console.log(await response.text())
     throw new Error(`Error fetching performances: ${response.statusText}`);
