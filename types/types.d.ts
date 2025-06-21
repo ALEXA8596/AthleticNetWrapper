@@ -1,4 +1,5 @@
 declare module 'athletic-net-wrapper' {
+    // --- AthleticNet Types ---
     export interface TrackTeamAPI {
         GetAthletes(teamId: string, sport?: string, year?: string): Promise<string>;
         GetTeamCore(teamId: string, sport: string, year: string): Promise<any>;
@@ -56,12 +57,40 @@ declare module 'athletic-net-wrapper' {
         runSearch(query: string): Promise<any>;
     }
 
-    export interface AthleticNetWrapper {
+    export interface AthleticAPI {
         track: TrackAPI;
         crosscountry: CrossCountryAPI;
         search: SearchAPI;
     }
 
-    const wrapper: AthleticNetWrapper;
-    export default wrapper;
+    // --- MileSplit Types ---
+    export interface MileSplitMeetsAPI {
+        getMeets(...args: any[]): Promise<any>;
+        getPerformances(...args: any[]): Promise<any>;
+    }
+
+    export interface MileSplitSearchAPI {
+        getSearchToken(query: string): Promise<any>;
+        fetchTeams(query: string): Promise<any>;
+        fetchAthletes(query: string): Promise<any>;
+    }
+
+    export interface MileSplitHomeAPI {
+        getLiveEvents(): Promise<any>;
+    }
+
+    export type MileSplitRankingsAPI = (...args: any[]) => Promise<any>;
+
+    export interface MileSplitAPI {
+        meets: MileSplitMeetsAPI;
+        rankings: MileSplitRankingsAPI;
+        search: MileSplitSearchAPI;
+        home: MileSplitHomeAPI;
+    }
+
+    // --- Main Export ---
+    export const athletic: AthleticAPI;
+    export const milesplit: MileSplitAPI;
+    const _default: { athletic: AthleticAPI; milesplit: MileSplitAPI };
+    export default _default;
 }
