@@ -10,12 +10,11 @@ exports.getPerformances = getPerformances;
 exports.getRawPerformances = getRawPerformances;
 exports.getResultFileList = getResultFileList;
 var _getDocument = _interopRequireDefault(require("../helpers/getDocument"));
+var _fetch = _interopRequireDefault(require("../helpers/fetch"));
 var cookie = _interopRequireWildcard(require("cookie"));
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-// import fetch from "node-fetch";
-
 const month = {
   "": "",
   January: "1",
@@ -74,7 +73,7 @@ async function getMeets(season, level, state, month, year) {
   const queryString = params.toString();
   const url = `https://www.milesplit.com/results/?${queryString}`;
   // console.log("Fetching meets from URL:", url);
-  const response = await fetch(url);
+  const response = await (0, _fetch.default)(url);
   if (!response.ok) {
     throw new Error(`Error fetching meets: ${response.statusText}`);
   }
@@ -88,7 +87,7 @@ async function getRawPerformances(meetId, resultsId) {
       uniqueId,
       appHash
     };
-    const res = await fetch("https://milesplit.com/meets/" + meetId + "/results/" + resultsId + "/formatted/");
+    const res = await (0, _fetch.default)("https://milesplit.com/meets/" + meetId + "/results/" + resultsId + "/formatted/");
     const headers = await res.headers;
     const setCookieHeader = headers.get("set-cookie");
     // console.log(setCookieHeader)
@@ -108,9 +107,9 @@ async function getRawPerformances(meetId, resultsId) {
   }
   const url = "https://milesplit.com/api/v1/meets/" + meetId + "/performances?isMeetPro=0&resultsId=" + resultsId + "&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET";
   const AppHashAndUniqueId = await getAppHashAndUniqueId();
-  const response = await fetch(url, {
+  const response = await (0, _fetch.default)(url, {
     headers: {
-      "Accept": "*/*",
+      Accept: "*/*",
       cookie: `unique_id=${AppHashAndUniqueId.uniqueId};`
     },
     method: "GET",
@@ -122,14 +121,14 @@ async function getRawPerformances(meetId, resultsId) {
   }
   return await response.json();
 }
-async function getPerformances(meetId, resultsId) {
-  const rawPerformances = await getRawPerformances(meetId, resultsId);
+async function getPerformances(meetId, resultsId, resultFileName = null, settings) {
+  const rawPerformances = await getRawPerformances(meetId, resultsId, settings);
 
   // rawPerformances contains a data object, which is an array of all the individual performances combined. Sort them by (resultsDivisionId || divisionName || divisionId), eventCode, then gender in a hierarchy JSON
   const performances = rawPerformances.data || [];
   const hierarchy = {};
   for (const perf of performances) {
-    const divisionKey = perf.resultsDivisionId || perf.divisionName || perf.divisionId || "Unknown";
+    const divisionKey = resultFileName || perf.resultsDivisionId || perf.divisionName || perf.divisionId || "Unknown";
     if (!hierarchy[divisionKey]) hierarchy[divisionKey] = {};
     if (!hierarchy[divisionKey][perf.eventCode]) hierarchy[divisionKey][perf.eventCode] = {};
     if (!hierarchy[divisionKey][perf.eventCode][perf.gender]) hierarchy[divisionKey][perf.eventCode][perf.gender] = [];
@@ -142,7 +141,7 @@ async function getPerformances(meetId, resultsId) {
  * @param {String | Number} meetId can be either just the numerical id or the whole title
  */
 async function getMeetData(meetId) {
-  const res = await fetch(`https://milesplit.com/meets/${meetId}`, {
+  const res = await (0, _fetch.default)(`https://milesplit.com/meets/${meetId}`, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
@@ -166,7 +165,7 @@ async function getMeetData(meetId) {
  * @param {String | Number} meetId can be either just the numerical id or the whole title
  */
 async function getResultFileList(meetId) {
-  const res = await fetch(`https://milesplit.com/meets/${meetId}/results`, {
+  const res = await (0, _fetch.default)(`https://milesplit.com/meets/${meetId}/results`, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
@@ -185,17 +184,20 @@ async function getResultFileList(meetId) {
   }
   const resultsIds = Array.from(resultFileList.querySelectorAll("a")).map(el => {
     const parts = el.href.split("/");
-    return parts[parts.length - 3];
+    return {
+      name: el.textContent,
+      id: parts[parts.length - 3]
+    };
   });
   return resultsIds;
 }
-async function getAllResultsData(meetId) {
+async function getAllResultsData(meetId, settings) {
   const resultFileList = await getResultFileList(meetId);
   if (resultFileList == null) {
     return null;
   }
-  const results = await Promise.all(resultFileList.map(async resultFileId => {
-    return await getPerformances(meetId, resultFileId);
+  const results = await Promise.all(resultFileList.map(async resultFile => {
+    return await getPerformances(meetId, resultFile.id, resultFile.name, settings);
   }));
   return results;
 }

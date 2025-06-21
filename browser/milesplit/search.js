@@ -6,12 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 exports.fetchAthletes = fetchAthletes;
 exports.fetchTeams = fetchTeams;
 exports.getSearchToken = getSearchToken;
-var _nodeFetch = _interopRequireDefault(require("node-fetch"));
+var _fetch = _interopRequireDefault(require("../helpers/fetch"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-// const fetch = require("node-fetch");
-
 async function getSearchToken() {
-  const token = await (0, _nodeFetch.default)("https://www.milesplit.com/search").then(response => response.text()).then(html => {
+  const token = await (0, _fetch.default)("https://www.milesplit.com/search").then(response => response.text()).then(html => {
     const match = html.match(/searchToken=([a-f0-9]{32})/);
     if (match) {
       return match[1];
@@ -28,7 +26,7 @@ async function fetchTeams(query) {
   const searchToken = await getSearchToken();
   console.log("Search Token:", searchToken);
   try {
-    const response = await (0, _nodeFetch.default)("https://www.milesplit.com/search/v2/teams", {
+    const response = await (0, _fetch.default)("https://www.milesplit.com/search/v2/teams", {
       headers: {
         accept: "*/*",
         "accept-language": "en-US,en;q=0.9",
@@ -60,7 +58,7 @@ async function fetchAthletes(query) {
   const searchToken = await getSearchToken();
   console.log("Search Token:", searchToken);
   try {
-    const response = await (0, _nodeFetch.default)("https://www.milesplit.com/search/v2/athletes", {
+    const response = await (0, _fetch.default)("https://www.milesplit.com/search/v2/athletes", {
       headers: {
         accept: "*/*",
         "accept-language": "en-US,en;q=0.9",

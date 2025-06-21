@@ -1,5 +1,4 @@
-// const fetch = require("node-fetch");
-import fetch from "node-fetch";
+import fetch from "../helpers/fetch";
 
 async function getSearchToken() {
   const token = await fetch("https://www.milesplit.com/search")

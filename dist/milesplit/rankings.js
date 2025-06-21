@@ -4,6 +4,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+var _fetch = _interopRequireDefault(require("../helpers/fetch"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 // URL format
 // https://STATEABBREVIATION.milesplit.com/rankings/leaders/LEVEL/SEASON
 
@@ -207,21 +209,21 @@ const years = {
  * @returns {Promise<string | null>}
  */
 async function getRankings(season, level, state, event = "Leaders", grade, year) {
-  console.log("Parameters:", {
-    season,
-    level,
-    state,
-    event,
-    grade,
-    year
-  });
+  // console.log("Parameters:", {
+  //     season,
+  //     level,
+  //     state,
+  //     event,
+  //     grade,
+  //     year
+  // });
   const baseUrl = `https://${states[state]}.milesplit.com/rankings`;
   let url;
   let params = new URLSearchParams();
-  if (year && years[year] !== 'all') params.append('year', years[year]);
-  if (grade && grades[grade]) params.append('grade', grades[grade]);
-  if (!event || event === 'Leaders' || event === null) {
-    url = `${baseUrl}/leaders/${levels[level]}/${seasons[season]}${params.toString() ? '?' + params.toString() : ''}`;
+  if (year && years[year] !== "all") params.append("year", years[year]);
+  if (grade && grades[grade]) params.append("grade", grades[grade]);
+  if (!event || event === "Leaders" || event === null) {
+    url = `${baseUrl}/leaders/${levels[level]}/${seasons[season]}${params.toString() ? "?" + params.toString() : ""}`;
   }
   // } else {
   //     url = `${baseUrl}/pro/${levels[level]}/${seasons[season]}/${event}${params.toString() ? '?' + params.toString() : ''}`;
@@ -229,7 +231,7 @@ async function getRankings(season, level, state, event = "Leaders", grade, year)
 
   console.log("Fetching URL:", url);
   try {
-    const response = await fetch(url);
+    const response = await (0, _fetch.default)(url);
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);
     }

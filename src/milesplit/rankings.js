@@ -1,3 +1,5 @@
+import fetch from "../helpers/fetch";
+
 // URL format
 // https://STATEABBREVIATION.milesplit.com/rankings/leaders/LEVEL/SEASON
 
@@ -207,29 +209,38 @@ const years = {
  * @param {import('./types').Year} [year]
  * @returns {Promise<string | null>}
  */
-async function getRankings(season, level, state, event = "Leaders", grade, year) {
-    console.log("Parameters:", {
-        season,
-        level,
-        state,
-        event,
-        grade,
-        year
-    });
+async function getRankings(
+  season,
+  level,
+  state,
+  event = "Leaders",
+  grade,
+  year
+) {
+  // console.log("Parameters:", {
+  //     season,
+  //     level,
+  //     state,
+  //     event,
+  //     grade,
+  //     year
+  // });
   const baseUrl = `https://${states[state]}.milesplit.com/rankings`;
-let url;
-let params = new URLSearchParams();
-if (year && years[year] !== 'all') params.append('year', years[year]);
-if (grade && grades[grade]) params.append('grade', grades[grade]);
+  let url;
+  let params = new URLSearchParams();
+  if (year && years[year] !== "all") params.append("year", years[year]);
+  if (grade && grades[grade]) params.append("grade", grades[grade]);
 
-if (!event || event === 'Leaders' || event === null) {
-    url = `${baseUrl}/leaders/${levels[level]}/${seasons[season]}${params.toString() ? '?' + params.toString() : ''}`;
-}
-// } else {
-//     url = `${baseUrl}/pro/${levels[level]}/${seasons[season]}/${event}${params.toString() ? '?' + params.toString() : ''}`;
-// }
-  
-console.log("Fetching URL:", url);
+  if (!event || event === "Leaders" || event === null) {
+    url = `${baseUrl}/leaders/${levels[level]}/${seasons[season]}${
+      params.toString() ? "?" + params.toString() : ""
+    }`;
+  }
+  // } else {
+  //     url = `${baseUrl}/pro/${levels[level]}/${seasons[season]}/${event}${params.toString() ? '?' + params.toString() : ''}`;
+  // }
+
+  console.log("Fetching URL:", url);
   try {
     const response = await fetch(url);
     if (!response.ok) {

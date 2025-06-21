@@ -1,6 +1,6 @@
 import getDocument from "../helpers/getDocument";
 
-// import fetch from "node-fetch";
+import fetch from "../helpers/fetch";
 
 import * as cookie from "cookie";
 
@@ -77,10 +77,18 @@ let appHash;
 
 async function getRawPerformances(meetId, resultsId) {
   async function getAppHashAndUniqueId() {
-    if(uniqueId && appHash) return {
-      uniqueId, appHash
-    }
-    const res = await fetch("https://milesplit.com/meets/" + meetId + "/results/" + resultsId + "/formatted/");
+    if (uniqueId && appHash)
+      return {
+        uniqueId,
+        appHash,
+      };
+    const res = await fetch(
+      "https://milesplit.com/meets/" +
+        meetId +
+        "/results/" +
+        resultsId +
+        "/formatted/"
+    );
     const headers = await res.headers;
     const setCookieHeader = headers.get("set-cookie");
     // console.log(setCookieHeader)
@@ -96,34 +104,37 @@ async function getRawPerformances(meetId, resultsId) {
     }
     return {
       appHash: match[1],
-      uniqueId
+      uniqueId,
     };
   }
 
-  const url = "https://milesplit.com/api/v1/meets/" + meetId + "/performances?isMeetPro=0&resultsId=" + resultsId + "&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET"
-  
+  const url =
+    "https://milesplit.com/api/v1/meets/" +
+    meetId +
+    "/performances?isMeetPro=0&resultsId=" +
+    resultsId +
+    "&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET";
 
   const AppHashAndUniqueId = await getAppHashAndUniqueId();
 
-
   const response = await fetch(url, {
     headers: {
-      "Accept": "*/*",
+      Accept: "*/*",
       cookie: `unique_id=${AppHashAndUniqueId.uniqueId};`,
     },
     method: "GET",
-    body: null
+    body: null,
   });
 
   if (!response.ok) {
-    console.log(await response.text())
+    console.log(await response.text());
     throw new Error(`Error fetching performances: ${response.statusText}`);
   }
   return await response.json();
 }
 
-async function getPerformances(meetId, resultsId) {
-  const rawPerformances = await getRawPerformances(meetId, resultsId);
+async function getPerformances(meetId, resultsId, resultFileName = null, settings) {
+  const rawPerformances = await getRawPerformances(meetId, resultsId, settings);
 
   // rawPerformances contains a data object, which is an array of all the individual performances combined. Sort them by (resultsDivisionId || divisionName || divisionId), eventCode, then gender in a hierarchy JSON
   const performances = rawPerformances.data || [];
@@ -131,6 +142,7 @@ async function getPerformances(meetId, resultsId) {
 
   for (const perf of performances) {
     const divisionKey =
+      resultFileName ||
       perf.resultsDivisionId ||
       perf.divisionName ||
       perf.divisionId ||
@@ -204,22 +216,25 @@ async function getResultFileList(meetId) {
   const resultsIds = Array.from(resultFileList.querySelectorAll("a")).map(
     (el) => {
       const parts = el.href.split("/");
-      return parts[parts.length - 3];
+      return {
+        name: el.textContent,
+        id: parts[parts.length - 3],
+      };
     }
   );
 
   return resultsIds;
 }
 
-async function getAllResultsData(meetId) {
+async function getAllResultsData(meetId, settings) {
   const resultFileList = await getResultFileList(meetId);
   if (resultFileList == null) {
     return null;
   }
 
   const results = await Promise.all(
-    resultFileList.map(async (resultFileId) => {
-      return await getPerformances(meetId, resultFileId);
+    resultFileList.map(async (resultFile) => {
+      return await getPerformances(meetId, resultFile.id, resultFile.name, settings);
     })
   );
 
