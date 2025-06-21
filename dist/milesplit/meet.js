@@ -3,8 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getAllResultsData = getAllResultsData;
+exports.getMeetData = getMeetData;
 exports.getMeets = getMeets;
 exports.getPerformances = getPerformances;
+exports.getRawPerformances = getRawPerformances;
+exports.getResultFileList = getResultFileList;
+var _getDocument = _interopRequireDefault(require("../helpers/getDocument"));
+var _nodeFetch = _interopRequireDefault(require("node-fetch"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 const month = {
   "": "",
   January: "1",
@@ -63,7 +70,7 @@ async function getMeets(season, level, state, month, year) {
   const queryString = params.toString();
   const url = `https://www.milesplit.com/results/?${queryString}`;
   console.log("Fetching meets from URL:", url);
-  const response = await fetch(url);
+  const response = await (0, _nodeFetch.default)(url);
   if (!response.ok) {
     throw new Error(`Error fetching meets: ${response.statusText}`);
   }
@@ -73,25 +80,109 @@ async function getMeets(season, level, state, month, year) {
 // https://ca.milesplit.com/meets/665700-arcadia-invitational-2025/coverage
 // https://ca.milesplit.com/api/v1/meets/665700/performances?isMeetPro=0&resultsId=1144979&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET
 
-// fetch("https://ca.milesplit.com/api/v1/meets/665700/performances?isMeetPro=1&resultsId=1144979&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET", {
-//   headers: {
-//     accept: "*/*",
-//     "accept-language": "en-US,en;q=0.9",
-//     appname: "MileSplit",
-//     apptoken: "f8a6f964ea4fb2e2758ad564ccbf22f5",
-//     priority: "u=1, i",
-//     cookie: "unique_id=764dfaf07333088a50776646417cb4eb; "
-//   },
-//   body: null,
-//   method: "GET"
-// });
-async function getPerformances(meetId, resultsId) {
+// fetch(
+//   "https://ca.milesplit.com/api/v1/meets/665700/performances?isMeetPro=1&resultsId=1144979&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET",
+//   {
+//     headers: {
+//       accept: "*/*",
+//       "accept-language": "en-US,en;q=0.9",
+//       appname: "MileSplit",
+//       apptoken: "f8a6f964ea4fb2e2758ad564ccbf22f5",
+//       priority: "u=1, i",
+//       cookie: "unique_id=764dfaf07333088a50776646417cb4eb; ",
+//     },
+//     body: null,
+//     method: "GET",
+//   }
+// );
+
+async function getRawPerformances(meetId, resultsId) {
   const fields = ["id", "meetId", "meetName", "teamId", "videoId", "teamName", "athleteId", "firstName", "lastName", "gender", "genderName", "divisionId", "divisionName", "meetResultsDivisionId", "resultsDivisionId", "ageGroupName", "gradYear", "eventName", "eventCode", "eventDistance", "eventGenreOrder", "round", "roundName", "heat", "units", "mark", "place", "windReading", "profileUrl", "teamProfileUrl", "performanceVideoId", "teamLogo", "statusCode"];
   const url = `https://ca.milesplit.com/api/v1/meets/${meetId}/performances?isMeetPro=0&resultsId=${resultsId}&fields=${encodeURI(fields.join(","))}&m=GET`;
   console.log("Fetching performances from URL:", url);
-  const response = await fetch(url);
+  const response = await (0, _nodeFetch.default)(url);
   if (!response.ok) {
     throw new Error(`Error fetching performances: ${response.statusText}`);
   }
   return await response.json();
+}
+;
+async function getPerformances(meetId, resultsId) {
+  const rawPerformances = await getRawPerformances(meetId, resultsId);
+
+  // rawPerformances contains a data object, which is an array of all the individual performances combined. Sort them by (resultsDivisionId || divisionName || divisionId), eventCode, then gender in a hierarchy JSON
+  const performances = rawPerformances.data || [];
+  const hierarchy = {};
+  for (const perf of performances) {
+    const divisionKey = perf.resultsDivisionId || perf.divisionName || perf.divisionId || "Unknown";
+    if (!hierarchy[divisionKey]) hierarchy[divisionKey] = {};
+    if (!hierarchy[divisionKey][perf.eventCode]) hierarchy[divisionKey][perf.eventCode] = {};
+    if (!hierarchy[divisionKey][perf.eventCode][perf.gender]) hierarchy[divisionKey][perf.eventCode][perf.gender] = [];
+    hierarchy[divisionKey][perf.eventCode][perf.gender].push(perf);
+  }
+  return hierarchy;
+}
+/**
+ * 
+ * @param {String | Number} meetId can be either just the numerical id or the whole title
+ */
+async function getMeetData(meetId) {
+  const res = await (0, _nodeFetch.default)(`https://milesplit.com/meets/${meetId}`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    }
+  }).then(res => res.text());
+  const document = (0, _getDocument.default)(res);
+
+  // Find the <script type="application/ld+json"> tag and parse its contents as JSON
+  const script = document.querySelector('script[type="application/ld+json"]');
+  let schema = null;
+  if (script) {
+    try {
+      schema = JSON.parse(script.textContent);
+    } catch (e) {
+      console.error("Failed to parse schema.org JSON:", e);
+    }
+  }
+  return schema;
+}
+;
+/**
+ * 
+ * @param {String | Number} meetId can be either just the numerical id or the whole title
+ */
+async function getResultFileList(meetId) {
+  const res = await (0, _nodeFetch.default)(`https://milesplit.com/meets/${meetId}`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    }
+  }).then(res => res.text());
+  const document = (0, _getDocument.default)(res);
+  if (document.getElementsByClassName("empty") && Array.from(document.getElementsByClassName("empty")) > 0) {
+    return null;
+  }
+
+  /**
+   * @type {Element}
+   */
+  const resultFileList = document.getElementById("resultFileList");
+  if (!resultFileList) {
+    return null;
+  }
+  const resultsIds = Array.from(resultFileList.querySelectorAll("a")).map(el => {
+    const parts = el.href.split("/");
+    return parts[parts.length - 3];
+  });
+  return resultsIds;
+}
+;
+async function getAllResultsData(meetId) {
+  const resultFileList = await getResultFileList(meetId);
+  if (resultFileList == null) {
+    return null;
+  }
+  const results = await Promise.all(resultFileList.map(async resultFileId => {
+    return await getPerformances(meetId, resultFileId);
+  }));
+  return results;
 }

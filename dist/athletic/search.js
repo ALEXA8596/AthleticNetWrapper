@@ -5,28 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _nodeFetch = _interopRequireDefault(require("node-fetch"));
+var _getDocument = _interopRequireDefault(require("../helpers/getDocument"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-let JSDOM;
-function removeTrailingWhitespace(string) {
-  return string.replace(/\s+$/, '');
-}
-const getDocument = typeof window !== 'undefined' && window.DOMParser ? function (text) {
-  // browser
-  return new DOMParser().parseFromString(text, 'text/html');
-} : async function (text) {
-  // Node.js environment
-  if (!JSDOM) {
-    /**
-     * @type {import('jsdom')}
-     */
-    const jsdomModule = await Promise.resolve().then(() => _interopRequireWildcard(require('jsdom')));
-    JSDOM = jsdomModule.JSDOM;
-  }
-  const dom = new JSDOM(text);
-  return dom.window.document;
-};
 const search = {
   AutoComplete: async function (query) {
     const response = await (0, _nodeFetch.default)(`https://www.athletic.net/api/v1/AutoComplete/search?q=${query}&fq=`).then(res => res.json());
@@ -56,7 +36,7 @@ const search = {
       }),
       "method": "POST"
     }).then(async res => await res.json());
-    var document = await getDocument("<table>" + response.d.results + "</table>");
+    var document = await (0, _getDocument.default)("<table>" + response.d.results + "</table>");
     [...document.getElementsByTagName('i')].forEach(element => element.remove());
     [...document.getElementsByClassName('sportIcon')].forEach(element => element.remove());
     [...document.getElementsByTagName('span')].forEach(element => element.remove());

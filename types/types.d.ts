@@ -1,52 +1,62 @@
 declare module 'athletichelper' {
     // --- AthleticNet Types ---
     export interface TrackTeamAPI {
-        GetAthletes(teamId: string, sport?: string, year?: string): Promise<string>;
-        GetTeamCore(teamId: string, sport: string, year: string): Promise<any>;
-        GetCalendar(teamId: string, sport: string, year: string): Promise<any>;
-        Team(teamId: string, year: string): Promise<any>;
-        GetTeamEventRecords(teamId: string, year: string): Promise<any>;
+        GetAthletes(teamId: string, sport?: string, year?: string): Promise<any>;
+        GetTeamCore(teamId: string, sport?: string, year?: string): Promise<any>;
+        GetCalendar(teamId: string, sport?: string, year?: string): Promise<any>;
+        Team(teamId: string, year?: string): Promise<any>;
+        GetTeamEventRecords(teamId: string, year?: string): Promise<any>;
         records: {
-            GetTeamEventRecords(teamId: string, year: string): Promise<any>;
+            GetTeamEventRecords(teamId: string, year?: string): Promise<any>;
             Seasons_TeamReports(teamId: string): Promise<any>;
             GetTeamRecords(teamId: string, gender?: string, eventShort?: string, indoor?: boolean | null, qParams?: Record<string, any>): Promise<any>;
         };
     }
 
+    export interface TrackAthleteAPI {
+        GetAthleteBioData(athleteId: string, sport?: string, level?: number): Promise<any>;
+    }
+
+    export interface TrackMeetAPI {
+        GetMeetData(meetId: string): Promise<any>;
+        GetAllResultsData(meetId: string): Promise<any>;
+        GetTeams(meetId: string): Promise<any>;
+    }
+
     export interface TrackAPI {
         team: TrackTeamAPI;
-        athlete: {
-            GetAthleteBioData(athleteId: string, sport: string, level?: number): Promise<any>;
-        };
-        meet: {
-            GetMeetData(meetId: string): Promise<any>;
-            GetAllResultsData(meetId: string): Promise<any>;
-            GetTeams(meetId: string): Promise<any>;
+        athlete: TrackAthleteAPI;
+        meet: TrackMeetAPI;
+    }
+
+    export interface CrossCountryTeamAPI {
+        Team(teamId: string, year?: string): Promise<any>;
+        GetTeamCore(teamId: string, year?: string | null): Promise<any>;
+        GetCalendar(teamId: string, year?: string | null): Promise<any>;
+        GetAthletes(teamId: string, year?: string | null): Promise<any>;
+        records: {
+            seasonBests(teamId: string, year?: string): Promise<any>;
+            TeamRecords(teamId: string): Promise<any>;
         };
     }
 
+    export interface CrossCountryAthleteAPI {
+        GetAthleteBioData(athleteId: string, level?: number): Promise<any>;
+        GetRankings(athleteId: string, seasonId: string): Promise<any>;
+    }
+
+    export interface CrossCountryMeetAPI {
+        GetMeetData(meetId: string): Promise<any>;
+        GetAllResultsData(meetId: string): Promise<any>;
+        GetResultsData(meetId: string, raceId: string): Promise<any>;
+        GetIndividualRaceResults(meetId: string, raceId: string): Promise<any>;
+        GetXCMoreData(meetId: string): Promise<any>;
+    }
+
     export interface CrossCountryAPI {
-        team: {
-            Team(teamId: string, year: string): Promise<any>;
-            GetTeamCore(teamId: string, year?: string | null): Promise<any>;
-            GetCalendar(teamId: string, year?: string | null): Promise<any>;
-            GetAthletes(teamId: string, year?: string | null): Promise<any>;
-            records: {
-                seasonBests(teamId: string, year?: string): Promise<any>;
-                TeamRecords(teamId: string): Promise<any>;
-            };
-        };
-        athlete: {
-            GetAthleteBioData(athleteId: string, level?: number): Promise<any>;
-            GetRankings(athleteId: string, seasonId: string): Promise<any>;
-        };
-        meet: {
-            GetMeetData(meetId: string): Promise<any>;
-            GetAllResultsData(meetId: string): Promise<any>;
-            GetResultsData(meetId: string, raceId: string): Promise<any>;
-            GetIndividualRaceResults(meetId: string, raceId: string): Promise<any>;
-            GetXCMoreData(meetId: string): Promise<any>;
-        };
+        team: CrossCountryTeamAPI;
+        athlete: CrossCountryAthleteAPI;
+        meet: CrossCountryMeetAPI;
         GetUncategorizedTeams(): Promise<any>;
         GetTree(): Promise<any>;
         GetDivisions(): Promise<any>;
@@ -54,7 +64,7 @@ declare module 'athletichelper' {
 
     export interface SearchAPI {
         AutoComplete(query: string): Promise<any>;
-        runSearch(query: string): Promise<any>;
+        runSearch(query: string, fq?: string): Promise<any>;
     }
 
     export interface AthleticAPI {
@@ -65,8 +75,12 @@ declare module 'athletichelper' {
 
     // --- MileSplit Types ---
     export interface MileSplitMeetsAPI {
-        getMeets(...args: any[]): Promise<any>;
-        getPerformances(...args: any[]): Promise<any>;
+        getMeets(season?: string, level?: string, state?: string, month?: string, year?: string): Promise<any>;
+        getPerformances(meetId: string, resultsId: string): Promise<any>;
+        getMeetData?(meetId: string): Promise<any>;
+        getResultFileList?(meetId: string): Promise<string[] | null>;
+        getAllResultsData?(meetId: string): Promise<any>;
+        getRawPerformances?(meetId: string, resultsId: string): Promise<any>;
     }
 
     export interface MileSplitSearchAPI {
@@ -79,7 +93,14 @@ declare module 'athletichelper' {
         getLiveEvents(): Promise<any>;
     }
 
-    export type MileSplitRankingsAPI = (...args: any[]) => Promise<any>;
+    export type MileSplitRankingsAPI = (
+        season: string,
+        level: string,
+        state: string,
+        event?: string,
+        grade?: string,
+        year?: string
+    ) => Promise<string | null>;
 
     export interface MileSplitAPI {
         meets: MileSplitMeetsAPI;

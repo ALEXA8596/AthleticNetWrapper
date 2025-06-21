@@ -1,3 +1,8 @@
+
+import getDocument from "../helpers/getDocument";
+
+import fetch from 'node-fetch';
+
 const month = {
   "": "",
   January: "1",
@@ -85,7 +90,7 @@ async function getMeets(season, level, state, month, year) {
 //   }
 // );
 
-async function getPerformances(meetId, resultsId) {
+async function getRawPerformances(meetId, resultsId) {
   const fields = [
     "id",
     "meetId",
@@ -129,6 +134,101 @@ async function getPerformances(meetId, resultsId) {
     throw new Error(`Error fetching performances: ${response.statusText}`);
   }
   return await response.json();
+};
+
+async function getPerformances(meetId, resultsId) {
+  const rawPerformances = await getRawPerformances(meetId, resultsId);
+
+  // rawPerformances contains a data object, which is an array of all the individual performances combined. Sort them by (resultsDivisionId || divisionName || divisionId), eventCode, then gender in a hierarchy JSON
+  const performances = rawPerformances.data || [];
+  const hierarchy = {};
+
+  for (const perf of performances) {
+    const divisionKey = perf.resultsDivisionId || perf.divisionName || perf.divisionId || "Unknown";
+    if (!hierarchy[divisionKey]) hierarchy[divisionKey] = {};
+    if (!hierarchy[divisionKey][perf.eventCode]) hierarchy[divisionKey][perf.eventCode] = {};
+    if (!hierarchy[divisionKey][perf.eventCode][perf.gender]) hierarchy[divisionKey][perf.eventCode][perf.gender] = [];
+    hierarchy[divisionKey][perf.eventCode][perf.gender].push(perf);
+  }
+
+  return hierarchy;
+
+}
+/**
+ * 
+ * @param {String | Number} meetId can be either just the numerical id or the whole title
+ */
+async function getMeetData(meetId) {
+  const res = await fetch(`https://milesplit.com/meets/${meetId}`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    }
+  }).then(res => res.text());
+
+  const document = getDocument(res);
+
+  // Find the <script type="application/ld+json"> tag and parse its contents as JSON
+  const script = document.querySelector('script[type="application/ld+json"]');
+  let schema = null;
+  if (script) {
+    try {
+      schema = JSON.parse(script.textContent);
+    } catch (e) {
+      console.error("Failed to parse schema.org JSON:", e);
+    }
+  }
+  return schema;
+};
+/**
+ * 
+ * @param {String | Number} meetId can be either just the numerical id or the whole title
+ */
+async function getResultFileList(meetId) {
+    const res = await fetch(`https://milesplit.com/meets/${meetId}`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    }
+  }).then(res => res.text());
+
+  const document = getDocument(res);
+
+  if(document.getElementsByClassName("empty") && Array.from(document.getElementsByClassName("empty")) > 0) {
+    return null;
+  }
+
+  /**
+   * @type {Element}
+   */
+  const resultFileList = document.getElementById("resultFileList");
+
+  if(!resultFileList) {
+    return null;
+  }
+
+  const resultsIds = Array.from(resultFileList.querySelectorAll("a")).map(el => {
+    const parts = el.href.split("/");
+    return parts[parts.length - 3];
+  });
+
+  return resultsIds;
+};
+
+async function getAllResultsData(meetId) {
+  const resultFileList = await getResultFileList(meetId);
+  if(resultFileList == null) {
+    return null;
+  }
+
+  const results = await Promise.all(resultFileList.map(async resultFileId => {
+    return await getPerformances(meetId, resultFileId)
+  }));
+
+  return results;
+
+
+
 }
 
-export { getMeets, getPerformances };
+
+
+export { getMeets, getPerformances, getMeetData, getResultFileList, getAllResultsData, getRawPerformances };
