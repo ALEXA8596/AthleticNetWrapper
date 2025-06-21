@@ -7,10 +7,10 @@ exports.milesplit = exports.default = exports.athletic = void 0;
 var _track = _interopRequireDefault(require("./athletic/track.js"));
 var _crosscountry = _interopRequireDefault(require("./athletic/crosscountry.js"));
 var _search = _interopRequireDefault(require("./athletic/search.js"));
-var _home = require("./home.js");
-var _search2 = require("./search.js");
-var _rankings = _interopRequireDefault(require("./rankings.js"));
-var _meet = require("./meet.js");
+var _home = require("./milesplit/home.js");
+var _search2 = require("./milesplit/search.js");
+var _rankings = _interopRequireDefault(require("./milesplit/rankings.js"));
+var _meet = require("./milesplit/meet.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 const athletic = exports.athletic = {
   track: _track.default,

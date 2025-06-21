@@ -1,4 +1,4 @@
-declare module 'athletic-net-wrapper' {
+declare module 'athletichelper' {
     // --- AthleticNet Types ---
     export interface TrackTeamAPI {
         GetAthletes(teamId: string, sport?: string, year?: string): Promise<string>;
