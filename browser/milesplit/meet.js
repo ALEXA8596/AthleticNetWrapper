@@ -69,7 +69,7 @@ async function getMeets(season, level, state, month, year) {
   if (year && year !== "") params.append("year", year);
   const queryString = params.toString();
   const url = `https://www.milesplit.com/results/?${queryString}`;
-  console.log("Fetching meets from URL:", url);
+  // console.log("Fetching meets from URL:", url);
   const response = await (0, _nodeFetch.default)(url);
   if (!response.ok) {
     throw new Error(`Error fetching meets: ${response.statusText}`);
@@ -99,7 +99,7 @@ async function getMeets(season, level, state, month, year) {
 async function getRawPerformances(meetId, resultsId) {
   const fields = ["id", "meetId", "meetName", "teamId", "videoId", "teamName", "athleteId", "firstName", "lastName", "gender", "genderName", "divisionId", "divisionName", "meetResultsDivisionId", "resultsDivisionId", "ageGroupName", "gradYear", "eventName", "eventCode", "eventDistance", "eventGenreOrder", "round", "roundName", "heat", "units", "mark", "place", "windReading", "profileUrl", "teamProfileUrl", "performanceVideoId", "teamLogo", "statusCode"];
   const url = `https://ca.milesplit.com/api/v1/meets/${meetId}/performances?isMeetPro=0&resultsId=${resultsId}&fields=${encodeURI(fields.join(","))}&m=GET`;
-  console.log("Fetching performances from URL:", url);
+  // console.log("Fetching performances from URL:", url);
   const response = await (0, _nodeFetch.default)(url);
   if (!response.ok) {
     throw new Error(`Error fetching performances: ${response.statusText}`);
@@ -132,7 +132,7 @@ async function getMeetData(meetId) {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
   }).then(res => res.text());
-  const document = (0, _getDocument.default)(res);
+  const document = await (0, _getDocument.default)(res);
 
   // Find the <script type="application/ld+json"> tag and parse its contents as JSON
   const script = document.querySelector('script[type="application/ld+json"]');
@@ -152,12 +152,12 @@ async function getMeetData(meetId) {
  * @param {String | Number} meetId can be either just the numerical id or the whole title
  */
 async function getResultFileList(meetId) {
-  const res = await (0, _nodeFetch.default)(`https://milesplit.com/meets/${meetId}`, {
+  const res = await (0, _nodeFetch.default)(`https://milesplit.com/meets/${meetId}/results`, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
   }).then(res => res.text());
-  const document = (0, _getDocument.default)(res);
+  const document = await (0, _getDocument.default)(res);
   if (document.getElementsByClassName("empty") && Array.from(document.getElementsByClassName("empty")) > 0) {
     return null;
   }

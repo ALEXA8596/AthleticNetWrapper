@@ -4,10 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-const fetch = require('node-fetch');
-var _default = exports.default = {
-  getLiveEvents: async function () {
-    const response = await fetch("https://www.milesplit.com/api/v1/liveevents");
-    return await response.json();
-  }
-};
+var _nodeFetch = _interopRequireDefault(require("node-fetch"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+async function getLiveEvents() {
+  const response = await (0, _nodeFetch.default)("https://www.milesplit.com/api/v1/liveevents");
+  return await response.json();
+}
+var _default = exports.default = getLiveEvents;
