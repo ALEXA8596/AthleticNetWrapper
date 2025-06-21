@@ -81,13 +81,23 @@ async function getMeets(season, level, state, month, year) {
 }
 let uniqueId;
 let appHash;
-async function getRawPerformances(meetId, resultsId) {
+
+/**
+ * 
+ * @param {String} meetId 
+ * @param {String} resultsId 
+ * @param {import("undici").RequestInfo} settings 
+ * @returns 
+ */
+async function getRawPerformances(meetId, resultsId, settings) {
   async function getAppHashAndUniqueId() {
     if (uniqueId && appHash) return {
       uniqueId,
       appHash
     };
-    const res = await (0, _fetch.default)("https://milesplit.com/meets/" + meetId + "/results/" + resultsId + "/formatted/");
+    const res = await (0, _fetch.default)("https://milesplit.com/meets/" + meetId + "/results/" + resultsId + "/formatted/", {
+      ...settings
+    });
     const headers = await res.headers;
     const setCookieHeader = headers.get("set-cookie");
     // console.log(setCookieHeader)
@@ -108,6 +118,7 @@ async function getRawPerformances(meetId, resultsId) {
   const url = "https://milesplit.com/api/v1/meets/" + meetId + "/performances?isMeetPro=0&resultsId=" + resultsId + "&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET";
   const AppHashAndUniqueId = await getAppHashAndUniqueId();
   const response = await (0, _fetch.default)(url, {
+    ...settings,
     headers: {
       Accept: "*/*",
       cookie: `unique_id=${AppHashAndUniqueId.uniqueId};`
@@ -121,6 +132,15 @@ async function getRawPerformances(meetId, resultsId) {
   }
   return await response.json();
 }
+
+/**
+ * 
+ * @param {String} meetId 
+ * @param {String} resultsId 
+ * @param {String | null} resultFileName 
+ * @param {import("undici").RequestInfo} settings 
+ * @returns 
+ */
 async function getPerformances(meetId, resultsId, resultFileName = null, settings) {
   const rawPerformances = await getRawPerformances(meetId, resultsId, settings);
 
@@ -163,9 +183,11 @@ async function getMeetData(meetId) {
 /**
  *
  * @param {String | Number} meetId can be either just the numerical id or the whole title
+ * @param {import("undici").RequestInfo} settings
  */
-async function getResultFileList(meetId) {
+async function getResultFileList(meetId, settings = {}) {
   const res = await (0, _fetch.default)(`https://milesplit.com/meets/${meetId}/results`, {
+    ...settings,
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
@@ -192,7 +214,7 @@ async function getResultFileList(meetId) {
   return resultsIds;
 }
 async function getAllResultsData(meetId, settings) {
-  const resultFileList = await getResultFileList(meetId);
+  const resultFileList = await getResultFileList(meetId, settings);
   if (resultFileList == null) {
     return null;
   }
