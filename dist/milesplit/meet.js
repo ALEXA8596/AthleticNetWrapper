@@ -11,6 +11,9 @@ exports.getRawPerformances = getRawPerformances;
 exports.getResultFileList = getResultFileList;
 var _getDocument = _interopRequireDefault(require("../helpers/getDocument"));
 var _nodeFetch = _interopRequireDefault(require("node-fetch"));
+var cookie = _interopRequireWildcard(require("cookie"));
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 const month = {
   "": "",
@@ -96,17 +99,52 @@ async function getMeets(season, level, state, month, year) {
 //   }
 // );
 
+let uniqueId;
+let appHash;
 async function getRawPerformances(meetId, resultsId) {
+  async function getAppHashAndUniqueId() {
+    if (uniqueId && appHash) return {
+      uniqueId,
+      appHash
+    };
+    const res = await (0, _nodeFetch.default)("https://milesplit.com/meets/" + meetId);
+    const headers = await res.headers;
+    const setCookieHeader = headers.get("set-cookie");
+    // console.log(setCookieHeader)
+    if (setCookieHeader) {
+      const parsed = cookie.parse(setCookieHeader);
+      uniqueId = parsed.unique_id;
+    }
+    const text = await res.text();
+    const match = text.match(/appHash:\s*'([^']+)'/);
+    if (!match) {
+      throw new Error("appHash not found");
+    }
+    return {
+      appHash: match[1],
+      uniqueId
+    };
+  }
   const fields = ["id", "meetId", "meetName", "teamId", "videoId", "teamName", "athleteId", "firstName", "lastName", "gender", "genderName", "divisionId", "divisionName", "meetResultsDivisionId", "resultsDivisionId", "ageGroupName", "gradYear", "eventName", "eventCode", "eventDistance", "eventGenreOrder", "round", "roundName", "heat", "units", "mark", "place", "windReading", "profileUrl", "teamProfileUrl", "performanceVideoId", "teamLogo", "statusCode"];
-  const url = `https://ca.milesplit.com/api/v1/meets/${meetId}/performances?isMeetPro=0&resultsId=${resultsId}&fields=${encodeURI(fields.join(","))}&m=GET`;
+  const url = `https://milesplit.com/api/v1/meets/${meetId}/performances?isMeetPro=0&resultsId=${resultsId}&fields=${encodeURI(fields.join(","))}&m=GET`;
   // console.log("Fetching performances from URL:", url);
-  const response = await (0, _nodeFetch.default)(url);
+
+  const AppHashAndUniqueId = await getAppHashAndUniqueId();
+  console.log(AppHashAndUniqueId);
+  const response = await (0, _nodeFetch.default)(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      cookie: `unique_id=${AppHashAndUniqueId.uniqueId};`,
+      Appname: "Milesplit",
+      Apptoken: AppHashAndUniqueId.appHash
+    }
+  });
   if (!response.ok) {
+    console.log(await response.text());
     throw new Error(`Error fetching performances: ${response.statusText}`);
   }
   return await response.json();
 }
-;
 async function getPerformances(meetId, resultsId) {
   const rawPerformances = await getRawPerformances(meetId, resultsId);
 
@@ -123,7 +161,7 @@ async function getPerformances(meetId, resultsId) {
   return hierarchy;
 }
 /**
- * 
+ *
  * @param {String | Number} meetId can be either just the numerical id or the whole title
  */
 async function getMeetData(meetId) {
@@ -146,9 +184,8 @@ async function getMeetData(meetId) {
   }
   return schema;
 }
-;
 /**
- * 
+ *
  * @param {String | Number} meetId can be either just the numerical id or the whole title
  */
 async function getResultFileList(meetId) {
@@ -175,7 +212,6 @@ async function getResultFileList(meetId) {
   });
   return resultsIds;
 }
-;
 async function getAllResultsData(meetId) {
   const resultFileList = await getResultFileList(meetId);
   if (resultFileList == null) {

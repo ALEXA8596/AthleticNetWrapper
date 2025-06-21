@@ -1,7 +1,8 @@
-
 import getDocument from "../helpers/getDocument";
 
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
+
+import * as cookie from "cookie";
 
 const month = {
   "": "",
@@ -90,7 +91,34 @@ async function getMeets(season, level, state, month, year) {
 //   }
 // );
 
+let uniqueId;
+let appHash;
+
 async function getRawPerformances(meetId, resultsId) {
+  async function getAppHashAndUniqueId() {
+    if(uniqueId && appHash) return {
+      uniqueId, appHash
+    }
+    const res = await fetch("https://milesplit.com/meets/" + meetId + "/results/" + resultsId + "/formatted/");
+    const headers = await res.headers;
+    const setCookieHeader = headers.get("set-cookie");
+    // console.log(setCookieHeader)
+    if (setCookieHeader) {
+      const parsed = cookie.parse(setCookieHeader);
+      uniqueId = parsed.unique_id;
+    }
+    const text = await res.text();
+
+    const match = text.match(/appHash:\s*'([^']+)'/);
+    if (!match) {
+      throw new Error("appHash not found");
+    }
+    return {
+      appHash: match[1],
+      uniqueId
+    };
+  }
+
   const fields = [
     "id",
     "meetId",
@@ -127,14 +155,31 @@ async function getRawPerformances(meetId, resultsId) {
     "statusCode",
   ];
 
-  const url = `https://ca.milesplit.com/api/v1/meets/${meetId}/performances?isMeetPro=0&resultsId=${resultsId}&fields=${encodeURI(fields.join(","))}&m=GET`;
+  const url = `https://milesplit.com/api/v1/meets/${meetId}/performances?isMeetPro=0&resultsId=${resultsId}&fields=${encodeURI(
+    fields.join(",")
+  )}&m=GET`;
   // console.log("Fetching performances from URL:", url);
-  const response = await fetch(url);
+
+  const AppHashAndUniqueId = await getAppHashAndUniqueId();
+
+  console.log(AppHashAndUniqueId)
+
+  const response = await fetch(url, {
+    headers: {
+      "Accept": "*/*",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      cookie: `unique_id=${AppHashAndUniqueId.uniqueId};`,
+      Appname: "Milesplit",
+      Apptoken: AppHashAndUniqueId.appHash,
+    },
+  });
   if (!response.ok) {
+    console.log(await response.text())
     throw new Error(`Error fetching performances: ${response.statusText}`);
   }
   return await response.json();
-};
+}
 
 async function getPerformances(meetId, resultsId) {
   const rawPerformances = await getRawPerformances(meetId, resultsId);
@@ -144,26 +189,32 @@ async function getPerformances(meetId, resultsId) {
   const hierarchy = {};
 
   for (const perf of performances) {
-    const divisionKey = perf.resultsDivisionId || perf.divisionName || perf.divisionId || "Unknown";
+    const divisionKey =
+      perf.resultsDivisionId ||
+      perf.divisionName ||
+      perf.divisionId ||
+      "Unknown";
     if (!hierarchy[divisionKey]) hierarchy[divisionKey] = {};
-    if (!hierarchy[divisionKey][perf.eventCode]) hierarchy[divisionKey][perf.eventCode] = {};
-    if (!hierarchy[divisionKey][perf.eventCode][perf.gender]) hierarchy[divisionKey][perf.eventCode][perf.gender] = [];
+    if (!hierarchy[divisionKey][perf.eventCode])
+      hierarchy[divisionKey][perf.eventCode] = {};
+    if (!hierarchy[divisionKey][perf.eventCode][perf.gender])
+      hierarchy[divisionKey][perf.eventCode][perf.gender] = [];
     hierarchy[divisionKey][perf.eventCode][perf.gender].push(perf);
   }
 
   return hierarchy;
-
 }
 /**
- * 
+ *
  * @param {String | Number} meetId can be either just the numerical id or the whole title
  */
 async function getMeetData(meetId) {
   const res = await fetch(`https://milesplit.com/meets/${meetId}`, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    }
-  }).then(res => res.text());
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    },
+  }).then((res) => res.text());
 
   const document = await getDocument(res);
 
@@ -178,21 +229,25 @@ async function getMeetData(meetId) {
     }
   }
   return schema;
-};
+}
 /**
- * 
+ *
  * @param {String | Number} meetId can be either just the numerical id or the whole title
  */
 async function getResultFileList(meetId) {
-    const res = await fetch(`https://milesplit.com/meets/${meetId}/results`, {
+  const res = await fetch(`https://milesplit.com/meets/${meetId}/results`, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    }
-  }).then(res => res.text());
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    },
+  }).then((res) => res.text());
 
   const document = await getDocument(res);
 
-  if(document.getElementsByClassName("empty") && Array.from(document.getElementsByClassName("empty")) > 0) {
+  if (
+    document.getElementsByClassName("empty") &&
+    Array.from(document.getElementsByClassName("empty")) > 0
+  ) {
     return null;
   }
 
@@ -201,34 +256,40 @@ async function getResultFileList(meetId) {
    */
   const resultFileList = document.getElementById("resultFileList");
 
-  if(!resultFileList) {
+  if (!resultFileList) {
     return null;
   }
 
-  const resultsIds = Array.from(resultFileList.querySelectorAll("a")).map(el => {
-    const parts = el.href.split("/");
-    return parts[parts.length - 3];
-  });
+  const resultsIds = Array.from(resultFileList.querySelectorAll("a")).map(
+    (el) => {
+      const parts = el.href.split("/");
+      return parts[parts.length - 3];
+    }
+  );
 
   return resultsIds;
-};
+}
 
 async function getAllResultsData(meetId) {
   const resultFileList = await getResultFileList(meetId);
-  if(resultFileList == null) {
+  if (resultFileList == null) {
     return null;
   }
 
-  const results = await Promise.all(resultFileList.map(async resultFileId => {
-    return await getPerformances(meetId, resultFileId)
-  }));
+  const results = await Promise.all(
+    resultFileList.map(async (resultFileId) => {
+      return await getPerformances(meetId, resultFileId);
+    })
+  );
 
   return results;
-
-
-
 }
 
-
-
-export { getMeets, getPerformances, getMeetData, getResultFileList, getAllResultsData, getRawPerformances };
+export {
+  getMeets,
+  getPerformances,
+  getMeetData,
+  getResultFileList,
+  getAllResultsData,
+  getRawPerformances,
+};
