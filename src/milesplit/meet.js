@@ -69,21 +69,21 @@ async function getMeets(season, level, state, month, year) {
 // https://ca.milesplit.com/meets/665700-arcadia-invitational-2025/coverage
 // https://ca.milesplit.com/api/v1/meets/665700/performances?isMeetPro=0&resultsId=1144979&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET
 
-fetch(
-  "https://ca.milesplit.com/api/v1/meets/665700/performances?isMeetPro=1&resultsId=1144979&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET",
-  {
-    headers: {
-      accept: "*/*",
-      "accept-language": "en-US,en;q=0.9",
-      appname: "MileSplit",
-      apptoken: "f8a6f964ea4fb2e2758ad564ccbf22f5",
-      priority: "u=1, i",
-      cookie: "unique_id=764dfaf07333088a50776646417cb4eb; ",
-    },
-    body: null,
-    method: "GET",
-  }
-);
+// fetch(
+//   "https://ca.milesplit.com/api/v1/meets/665700/performances?isMeetPro=1&resultsId=1144979&fields=id%2CmeetId%2CmeetName%2CteamId%2CvideoId%2CteamName%2CathleteId%2CfirstName%2ClastName%2Cgender%2CgenderName%2CdivisionId%2CdivisionName%2CmeetResultsDivisionId%2CresultsDivisionId%2CageGroupName%2CgradYear%2CeventName%2CeventCode%2CeventDistance%2CeventGenreOrder%2Cround%2CroundName%2Cheat%2Cunits%2Cmark%2Cplace%2CwindReading%2CprofileUrl%2CteamProfileUrl%2CperformanceVideoId%2CteamLogo%2CstatusCode&m=GET",
+//   {
+//     headers: {
+//       accept: "*/*",
+//       "accept-language": "en-US,en;q=0.9",
+//       appname: "MileSplit",
+//       apptoken: "f8a6f964ea4fb2e2758ad564ccbf22f5",
+//       priority: "u=1, i",
+//       cookie: "unique_id=764dfaf07333088a50776646417cb4eb; ",
+//     },
+//     body: null,
+//     method: "GET",
+//   }
+// );
 
 async function getPerformances(meetId, resultsId) {
   const fields = [
